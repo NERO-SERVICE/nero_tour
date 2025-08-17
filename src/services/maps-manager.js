@@ -43,7 +43,9 @@ class GoogleMapsManager {
             this.map = new google.maps.Map(container, mapOptions);
             
         } catch (error) {
-            console.error('❌ Map creation failed:', error);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.error('❌ Map creation failed:', error);
+            }
             throw error;
         }
         
@@ -114,7 +116,9 @@ class GoogleMapsManager {
                 this.infoWindows.push(infoWindow);
                 
             } catch (error) {
-                console.error(`마커 ${index + 1} 오류:`, error);
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.error(`마커 ${index + 1} 오류:`, error);
+                }
             }
         });
 
@@ -222,7 +226,9 @@ class GoogleMapsManager {
             this.directionsRenderer.setDirections(result);
             return result;
         } catch (error) {
-            console.error('경로 계산 오류:', error);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.error('경로 계산 오류:', error);
+            }
             throw error;
         }
     }

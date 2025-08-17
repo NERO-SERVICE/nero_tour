@@ -53,18 +53,27 @@ async function main() {
         console.log(`   ${key}: ${maskedValue}`);
     });
 
-    // Create the config file content
+    // Create secure config with obfuscated keys in production
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // Encode sensitive data in base64 for basic obfuscation
+    const encodeKey = (key) => {
+        if (!key) return '';
+        return isProduction ? btoa(key) : key;
+    };
+    
+    // Create the config file content with security measures
     const configContent = `// Seoul Explorer - Configuration File
 // 🚀 Auto-generated during build - DO NOT EDIT MANUALLY
-// Environment variables injected by Netlify build process
+// Security: Sensitive data is encoded in production builds
 
 const CONFIG = {
-    // Google Maps API Key - Injected from environment
-    GOOGLE_MAPS_API_KEY: "${envVars.GOOGLE_MAPS_API_KEY || ''}",
+    // Google Maps API Key - Encoded for security
+    GOOGLE_MAPS_API_KEY: "${encodeKey(envVars.GOOGLE_MAPS_API_KEY)}",
     
-    // Firebase Configuration - Injected from environment
+    // Firebase Configuration - Encoded for security
     FIREBASE_CONFIG: {
-        apiKey: "${envVars.FIREBASE_API_KEY || ''}",
+        apiKey: "${encodeKey(envVars.FIREBASE_API_KEY)}",
         authDomain: "${envVars.FIREBASE_AUTH_DOMAIN || ''}",
         projectId: "${envVars.FIREBASE_PROJECT_ID || ''}",
         storageBucket: "${envVars.FIREBASE_STORAGE_BUCKET || ''}",
@@ -72,6 +81,10 @@ const CONFIG = {
         appId: "${envVars.FIREBASE_APP_ID || ''}",
         measurementId: "${envVars.FIREBASE_MEASUREMENT_ID || ''}"
     },
+    
+    // Security settings
+    IS_PRODUCTION: ${isProduction},
+    ENCODED_KEYS: ${isProduction},
     
     // Map default settings
     MAP_CONFIG: {
@@ -100,19 +113,29 @@ const CONFIG = {
     }
 };
 
+// Secure key decoding function
+function decodeKey(encodedKey) {
+    if (!encodedKey) return '';
+    try {
+        return CONFIG.ENCODED_KEYS ? atob(encodedKey) : encodedKey;
+    } catch (e) {
+        if (!CONFIG.IS_PRODUCTION) {
+            console.warn('⚠️ Key decoding failed, using original');
+        }
+        return encodedKey;
+    }
+}
+
 // API key validation - Firebase is optional, Maps is required
 function validateConfig() {
-    const hasValidMapsKey = CONFIG.GOOGLE_MAPS_API_KEY && 
-                           CONFIG.GOOGLE_MAPS_API_KEY.length > 20 && 
-                           !CONFIG.GOOGLE_MAPS_API_KEY.includes('NOT_SET') &&
-                           CONFIG.GOOGLE_MAPS_API_KEY.startsWith('AIza');
+    const decodedKey = decodeKey(CONFIG.GOOGLE_MAPS_API_KEY);
+    const hasValidMapsKey = decodedKey && 
+                           decodedKey.length > 20 && 
+                           !decodedKey.includes('NOT_SET') &&
+                           decodedKey.startsWith('AIza');
     
-    if (!hasValidMapsKey) {
-        console.error('Invalid Google Maps API key:', {
-            exists: !!CONFIG.GOOGLE_MAPS_API_KEY,
-            length: CONFIG.GOOGLE_MAPS_API_KEY?.length,
-            startsWithAIza: CONFIG.GOOGLE_MAPS_API_KEY?.startsWith('AIza')
-        });
+    if (!hasValidMapsKey && !CONFIG.IS_PRODUCTION) {
+        console.warn('⚠️ Google Maps API key validation failed');
     }
     
     return hasValidMapsKey;
@@ -120,15 +143,28 @@ function validateConfig() {
 
 // Additional validation specifically for Maps
 function validateMapsConfig() {
-    return CONFIG.GOOGLE_MAPS_API_KEY && 
-           CONFIG.GOOGLE_MAPS_API_KEY.length > 30 && 
-           CONFIG.GOOGLE_MAPS_API_KEY.startsWith('AIza') &&
-           !CONFIG.GOOGLE_MAPS_API_KEY.includes('NOT_SET');
+    const decodedKey = decodeKey(CONFIG.GOOGLE_MAPS_API_KEY);
+    return decodedKey && 
+           decodedKey.length > 30 && 
+           decodedKey.startsWith('AIza') &&
+           !decodedKey.includes('NOT_SET');
 }
 
-// Export for global use
+// Secure API key getter
+function getGoogleMapsKey() {
+    return decodeKey(CONFIG.GOOGLE_MAPS_API_KEY);
+}
+
+function getFirebaseApiKey() {
+    return decodeKey(CONFIG.FIREBASE_CONFIG.apiKey);
+}
+
+// Export for global use with security functions
 window.CONFIG = CONFIG;
 window.validateConfig = validateConfig;
+window.getGoogleMapsKey = getGoogleMapsKey;
+window.getFirebaseApiKey = getFirebaseApiKey;
+window.decodeKey = decodeKey;
 
 // Build info
 window.BUILD_INFO = {

@@ -9,14 +9,20 @@ class DetailPage {
     }
 
     init() {
-        console.log('DetailPage init started');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('DetailPage init started');
+        }
         
         // Get location ID from URL parameters
         this.locationId = this.getLocationIdFromURL();
-        console.log('Location ID from URL:', this.locationId);
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('Location ID from URL:', this.locationId);
+        }
         
         if (!this.locationId) {
-            console.log('No location ID found, showing error');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('No location ID found, showing error');
+            }
             this.showError();
             return;
         }
@@ -264,14 +270,17 @@ class DetailPage {
     }
 
     renderLocationDetails() {
-        console.log('Starting to render location details for:', this.locationData.name);
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('Starting to render location details for:', this.locationData.name);
+        }
         
         const loadingState = document.getElementById('loadingState');
         const detailContent = document.getElementById('detailContent');
         const headerTitle = document.getElementById('headerTitle');
         const directionsFab = document.getElementById('directionsFab');
 
-        console.log('Found DOM elements:', {
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('Found DOM elements:', {
             loadingState: !!loadingState,
             detailContent: !!detailContent,
             headerTitle: !!headerTitle,
@@ -286,7 +295,9 @@ class DetailPage {
 
         // Hide loading state
         loadingState.style.display = 'none';
-        console.log('Loading state hidden');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('Loading state hidden');
+        }
         
         // Update header title
         if (headerTitle) {
@@ -381,7 +392,9 @@ class DetailPage {
             imageService.addImageFallback(img);
         });
         
-        console.log('Content rendered successfully');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('Content rendered successfully');
+        }
     }
 
     renderDetailSections() {
@@ -538,11 +551,15 @@ window.DetailPage = DetailPage;
 
 // Initialize detail page when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, creating DetailPage');
+    if (!window.CONFIG?.IS_PRODUCTION) {
+        console.log('DOM loaded, creating DetailPage');
+    }
     try {
         const detailPage = new DetailPage();
         window.detailPageInstance = detailPage; // For debugging
-        console.log('DetailPage created successfully');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('DetailPage created successfully');
+        }
     } catch (error) {
         console.error('Error creating DetailPage:', error);
         // Show error state if initialization fails
@@ -555,9 +572,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Fallback initialization in case DOMContentLoaded already fired
 if (document.readyState === 'loading') {
-    console.log('Document still loading, waiting for DOMContentLoaded');
+    if (!window.CONFIG?.IS_PRODUCTION) {
+        console.log('Document still loading, waiting for DOMContentLoaded');
+    }
 } else {
-    console.log('Document already loaded, initializing immediately');
+    if (!window.CONFIG?.IS_PRODUCTION) {
+        console.log('Document already loaded, initializing immediately');
+    }
     try {
         const detailPage = new DetailPage();
         window.detailPageInstance = detailPage; // For debugging

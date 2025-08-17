@@ -18,12 +18,16 @@ class SeoulMapManager {
     }
 
     async init() {
-        console.log('🗺️ Initializing Seoul Map Manager...');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🗺️ Initializing Seoul Map Manager...');
+        }
         
         try {
             // 서비스 초기화 및 랜드마크 데이터 로드
             this.landmarks = await dataService.getAllLandmarks();
-            console.log('✅ Landmarks data loaded for map');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Landmarks data loaded for map');
+            }
         } catch (error) {
             console.error('❌ Failed to load landmarks data:', error);
             // Firebase에서 데이터를 불러올 수 없는 경우 빈 배열 사용
@@ -678,7 +682,9 @@ class SeoulMapManager {
                 });
             });
 
-            console.log(`✅ Added ${landmarks.length} attraction markers with icon-based pins`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`✅ Added ${landmarks.length} attraction markers with icon-based pins`);
+            }
         } catch (error) {
             console.error('❌ Error adding attraction markers:', error);
         }
@@ -732,10 +738,14 @@ class SeoulMapManager {
                             formattedAddress = 'Seoul, South Korea';
                         }
                         
-                        console.log('✅ Formatted address:', formattedAddress);
+                        if (!window.CONFIG?.IS_PRODUCTION) {
+                            console.log('✅ Formatted address:', formattedAddress);
+                        }
                         resolve(formattedAddress);
                     } else {
-                        console.warn('⚠️ Geocoding failed, using default');
+                        if (!window.CONFIG?.IS_PRODUCTION) {
+                            console.warn('⚠️ Geocoding failed, using default');
+                        }
                         resolve('Seoul, South Korea');
                     }
                 });
@@ -755,7 +765,9 @@ class SeoulMapManager {
             if (locationText) {
                 locationText.textContent = 'Seoul, South Korea';
             }
-            console.warn('⚠️ Geolocation is not supported by this browser');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.warn('⚠️ Geolocation is not supported by this browser');
+            }
             return;
         }
 
@@ -771,7 +783,9 @@ class SeoulMapManager {
                     lng: position.coords.longitude
                 };
                 
-                console.log('✅ User location obtained:', this.currentLocation);
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.log('✅ User location obtained:', this.currentLocation);
+                }
                 
                 // Get address from coordinates - using Google's English format
                 if (locationText && window.google && window.google.maps) {
@@ -816,7 +830,9 @@ class SeoulMapManager {
 
     // Initialize Google Maps
     async initializeMap() {
-        console.log('🗺️ Initializing Google Maps...');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🗺️ Initializing Google Maps...');
+        }
         
         const mapContainer = document.getElementById('mapContainer');
         if (!mapContainer) {
@@ -851,7 +867,9 @@ class SeoulMapManager {
                 }
             });
 
-            console.log('✅ Map initialized successfully');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Map initialized successfully');
+            }
 
             // Hide loading screen
             if (mapLoading) {
@@ -957,9 +975,13 @@ class SeoulMapManager {
                 if (this.currentLocation && this.map) {
                     this.map.setCenter(this.currentLocation);
                     this.map.setZoom(15);
-                    console.log('📍 Centered map on user location');
+                    if (!window.CONFIG?.IS_PRODUCTION) {
+                        console.log('📍 Centered map on user location');
+                    }
                 } else {
-                    console.warn('⚠️ User location not available');
+                    if (!window.CONFIG?.IS_PRODUCTION) {
+                        console.warn('⚠️ User location not available');
+                    }
                 }
             });
         }
@@ -972,11 +994,15 @@ class SeoulMapManager {
                     if (this.isTrafficVisible) {
                         this.trafficLayer.setMap(null);
                         this.isTrafficVisible = false;
-                        console.log('🚫 Traffic layer hidden');
+                        if (!window.CONFIG?.IS_PRODUCTION) {
+                            console.log('🚫 Traffic layer hidden');
+                        }
                     } else {
                         this.trafficLayer.setMap(this.map);
                         this.isTrafficVisible = true;
-                        console.log('🚗 Traffic layer shown');
+                        if (!window.CONFIG?.IS_PRODUCTION) {
+                            console.log('🚗 Traffic layer shown');
+                        }
                     }
                 }
             });
@@ -1005,7 +1031,9 @@ class SeoulMapManager {
             const url = `https://maps.google.com/maps?daddr=${destination}&dirflg=w`;
             
             window.open(url, '_blank');
-            console.log(`🗺️ Opened directions to ${landmark.name}`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`🗺️ Opened directions to ${landmark.name}`);
+            }
         } catch (error) {
             console.error('❌ Error getting directions:', error);
         }
@@ -1025,7 +1053,9 @@ class SeoulMapManager {
                 mapContainer.msRequestFullscreen();
             }
             this.isFullscreen = true;
-            console.log('🖥️ Entered fullscreen mode');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('🖥️ Entered fullscreen mode');
+            }
         } else {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
@@ -1035,7 +1065,9 @@ class SeoulMapManager {
                 document.msExitFullscreen();
             }
             this.isFullscreen = false;
-            console.log('🖥️ Exited fullscreen mode');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('🖥️ Exited fullscreen mode');
+            }
         }
     }
 
@@ -1046,7 +1078,8 @@ class SeoulMapManager {
         const clearButton = document.getElementById('headerClearSearch');
         const searchResults = document.getElementById('headerSearchResults');
 
-        console.log('🔍 Setting up search listeners:', {
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🔍 Setting up search listeners:', {
             searchInput: !!searchInput,
             clearButton: !!clearButton,
             searchResults: !!searchResults
@@ -1233,7 +1266,9 @@ class SeoulMapManager {
         // Show info window immediately
         infoWindow.open(this.map, marker);
 
-        console.log('✅ Selected place:', place.name);
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('✅ Selected place:', place.name);
+        }
     }
 
     // Get appropriate icon for place type
@@ -1308,6 +1343,8 @@ window.seoulMapManager = new SeoulMapManager();
 
 // Global callback for Google Maps API
 window.initializeGoogleMaps = function() {
-    console.log('✅ Google Maps API loaded and ready');
+    if (!window.CONFIG?.IS_PRODUCTION) {
+        console.log('✅ Google Maps API loaded and ready');
+    }
     window.seoulMapManager.initializeMap();
 };

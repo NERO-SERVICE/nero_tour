@@ -35,7 +35,9 @@ class SeoulExplorer {
             await this.renderLocationCards();
             this.getCurrentLocation(); // Get location only once on load
             
-            console.log('✅ Seoul Explorer initialized successfully');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Seoul Explorer initialized successfully');
+            }
         } catch (error) {
             console.error('❌ Failed to initialize Seoul Explorer:', error);
             // fallback으로 기존 방식 사용
@@ -45,7 +47,9 @@ class SeoulExplorer {
     
     // fallback 초기화 (서비스 로드 실패 시)
     initializeFallback() {
-        console.log('🔄 Using fallback initialization');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🔄 Using fallback initialization');
+        }
         this.landmarks = []; // 빈 배열로 초기화
         this.initializeEventListeners();
         this.renderLocationCards();
@@ -73,7 +77,9 @@ class SeoulExplorer {
         const locationStatus = document.getElementById('currentLocation');
 
         if (!navigator.geolocation) {
-            console.warn('⚠️ Geolocation not supported');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.warn('⚠️ Geolocation not supported');
+            }
             if (locationStatus) {
                 locationStatus.textContent = 'Seoul, South Korea';
             }
@@ -91,7 +97,9 @@ class SeoulExplorer {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 };
-                console.log('📍 Location obtained:', this.currentLocation);
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.log('📍 Location obtained:', this.currentLocation);
+                }
                 this.handleLocationSuccess();
             },
             (error) => {
@@ -186,7 +194,9 @@ class SeoulExplorer {
         try {
             // Check if Google Maps API key is available
             if (!window.CONFIG || !CONFIG.GOOGLE_MAPS_API_KEY || CONFIG.GOOGLE_MAPS_API_KEY === 'your-api-key-here') {
-                console.warn('Google Maps API key not configured, using default location');
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.warn('Google Maps API key not configured, using default location');
+                }
                 return 'Seoul, South Korea';
             }
 
@@ -223,7 +233,9 @@ class SeoulExplorer {
             
             throw new Error('No geocoding results found');
         } catch (error) {
-            console.warn('Reverse geocoding failed:', error);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.warn('Reverse geocoding failed:', error);
+            }
             return 'Seoul, South Korea';
         }
     }
@@ -391,7 +403,9 @@ class SeoulExplorer {
         
         // Debug logging (remove in production)
         if (this.debugMode) {
-            console.log(`Card adjusted - Tags: ${tags.offsetHeight}px, Image: ${finalHeight}px`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`Card adjusted - Tags: ${tags.offsetHeight}px, Image: ${finalHeight}px`);
+            }
         }
     }
     
@@ -489,7 +503,9 @@ class SeoulExplorer {
     testTagScenarios() {
         if (!this.debugMode) return;
         
-        console.log('🧪 Testing Dynamic Image Heights:');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🧪 Testing Dynamic Image Heights:');
+        }
         
         const cards = document.querySelectorAll('.location-card');
         cards.forEach((card, index) => {
@@ -500,7 +516,8 @@ class SeoulExplorer {
             const imageHeight = parseInt(image.style.height);
             const locationName = card.querySelector('.location-name').textContent;
             
-            console.log(`Card ${index + 1} (${locationName}):`, {
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`Card ${index + 1} (${locationName}):`, {
                 tags: tagCount,
                 tagHeight: `${tagHeight}px`,
                 imageHeight: `${imageHeight}px`,
@@ -529,21 +546,29 @@ class SeoulExplorer {
 
     // Initialize event listeners
     initializeEventListeners() {
-        console.log('🎯 Initializing event listeners...');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🎯 Initializing event listeners...');
+        }
 
         // Start automatic location tracking (no manual refresh needed)
         this.startAutoLocationTracking();
 
         // Bottom navigation with enhanced debugging
         const navItems = document.querySelectorAll('.nav-item');
-        console.log(`📱 Found ${navItems.length} navigation items`);
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log(`📱 Found ${navItems.length} navigation items`);
+        }
         
         navItems.forEach((item, index) => {
             const section = item.dataset.section;
-            console.log(`📍 Nav item ${index}: section="${section}"`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`📍 Nav item ${index}: section="${section}"`);
+            }
             
             item.addEventListener('click', (e) => {
-                console.log('🔘 Navigation item clicked:', section);
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.log('🔘 Navigation item clicked:', section);
+                }
                 
                 try {
                     // Update active state
@@ -552,7 +577,9 @@ class SeoulExplorer {
                     
                     // Get section from clicked element
                     const clickedSection = e.target.closest('.nav-item').dataset.section;
-                    console.log('🎯 Navigating to section:', clickedSection);
+                    if (!window.CONFIG?.IS_PRODUCTION) {
+                        console.log('🎯 Navigating to section:', clickedSection);
+                    }
                     
                     // Handle navigation with error handling
                     this.handleNavigation(clickedSection);
@@ -562,7 +589,9 @@ class SeoulExplorer {
                     
                     // Force map page navigation if it was a map click
                     if (section === 'map' || clickedSection === 'map') {
-                        console.log('🗺️ Forcing map page navigation...');
+                        if (!window.CONFIG?.IS_PRODUCTION) {
+                            console.log('🗺️ Forcing map page navigation...');
+                        }
                         this.forceMapNavigation();
                     }
                 }
@@ -572,18 +601,23 @@ class SeoulExplorer {
         // Add additional debugging for map button specifically
         const mapButton = document.querySelector('.nav-item[data-section="map"]');
         if (mapButton) {
-            console.log('✅ Map button found and listener attached');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Map button found and listener attached');
+            }
             
             // Add additional click listener as backup
             mapButton.addEventListener('click', (e) => {
-                console.log('🗺️ Map button clicked (backup listener)');
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.log('🗺️ Map button clicked (backup listener)');
+                }
                 e.preventDefault();
                 this.forceMapNavigation();
             }, { once: false, passive: false });
             
         } else {
             console.error('❌ Map button not found!');
-            console.log('🔍 Available nav items:', 
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('🔍 Available nav items:', 
                 Array.from(navItems).map(item => ({
                     section: item.dataset.section,
                     text: item.textContent.trim()
@@ -613,7 +647,9 @@ class SeoulExplorer {
     }
 
     handleNavigation(section) {
-        console.log('🎯 handleNavigation called with section:', section);
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🎯 handleNavigation called with section:', section);
+        }
         
         try {
             switch(section) {
@@ -636,7 +672,9 @@ class SeoulExplorer {
     // showFavorites functionality removed for simplified UX
 
     openMapPage() {
-        console.log('🗺️ Opening map page...');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🗺️ Opening map page...');
+        }
         
         try {
             // Show loading state immediately
@@ -1334,21 +1372,27 @@ SeoulExplorer.prototype.updateLocationDisplay = async function() {
         try {
             const address = await this.getGoogleMapsAddress(this.currentLocation.lat, this.currentLocation.lng);
             locationStatus.textContent = address;
-            console.log('📍 Updated location display:', address);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('📍 Updated location display:', address);
+            }
         } catch (error) {
             console.error('Error updating location display:', error);
             // Retry after delay
             setTimeout(() => this.updateLocationDisplay(), 2000);
         }
     } else {
-        console.log('⏳ Google Maps not ready, retrying...');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('⏳ Google Maps not ready, retrying...');
+        }
         setTimeout(() => this.updateLocationDisplay(), 1000);
     }
 };
 
 // Called when Google Maps is ready
 SeoulExplorer.prototype.onGoogleMapsReady = function() {
-    console.log('🗺️ Google Maps ready in explorer');
+    if (!window.CONFIG?.IS_PRODUCTION) {
+        console.log('🗺️ Google Maps ready in explorer');
+    }
     this.googleMapsReady = true;
     // Update location display immediately
     if (this.currentLocation) {
@@ -1407,10 +1451,14 @@ SeoulExplorer.prototype.getGoogleMapsAddress = async function(lat, lng) {
                     formattedAddress = 'Seoul, South Korea';
                 }
                 
-                console.log('✅ Formatted address:', formattedAddress);
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.log('✅ Formatted address:', formattedAddress);
+                }
                 resolve(formattedAddress);
             } else {
-                console.warn('⚠️ Geocoding failed:', status);
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.warn('⚠️ Geocoding failed:', status);
+                }
                 reject('Geocoding failed');
             }
         });

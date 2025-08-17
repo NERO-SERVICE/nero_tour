@@ -2,10 +2,18 @@
 // Make sure config.js is loaded before this script
 // This file uses Firebase v9+ modular SDK with CDN imports
 
-// Firebase configuration loaded from CONFIG
+// Firebase configuration loaded from CONFIG with decoding
 function getFirebaseConfig() {
     if (typeof window !== 'undefined' && window.CONFIG?.FIREBASE_CONFIG) {
-        return window.CONFIG.FIREBASE_CONFIG;
+        const config = window.CONFIG.FIREBASE_CONFIG;
+        
+        // Decode API key if it's encoded
+        const decodedConfig = {
+            ...config,
+            apiKey: window.getFirebaseApiKey ? window.getFirebaseApiKey() : config.apiKey
+        };
+        
+        return decodedConfig;
     }
     
     return null; // No Firebase config available
@@ -35,67 +43,94 @@ function initializeFirebase() {
         
         // Check if Firebase config is valid
         if (!isFirebaseConfigValid(firebaseConfig)) {
-            console.error('❌ Firebase configuration not available or invalid');
-            console.error('Config:', firebaseConfig);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.error('❌ Firebase configuration not available or invalid');
+                console.error('Config:', firebaseConfig);
+            }
             return false;
         }
         
         // Check if Firebase SDK is loaded from CDN
         if (typeof firebase === 'undefined') {
-            console.error('❌ Firebase SDK not loaded from CDN');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.error('❌ Firebase SDK not loaded from CDN');
+            }
             return false;
         }
 
-        console.log('🔥 Initializing Firebase with config:', {
-            projectId: firebaseConfig.projectId,
-            authDomain: firebaseConfig.authDomain,
-            storageBucket: firebaseConfig.storageBucket
-        });
+        // Only log in development mode
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🔥 Initializing Firebase with config:', {
+                projectId: firebaseConfig.projectId,
+                authDomain: firebaseConfig.authDomain,
+                storageBucket: firebaseConfig.storageBucket
+            });
+        }
 
         // Initialize Firebase App
         FirebaseApp = firebase.initializeApp(firebaseConfig);
-        console.log('✅ Firebase App initialized');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('✅ Firebase App initialized');
+        }
         
         // Initialize Firestore
         if (firebase.firestore) {
             FirebaseDB = firebase.firestore();
-            console.log('✅ Firestore initialized');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Firestore initialized');
+            }
         } else {
-            console.error('❌ Firestore not available');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.error('❌ Firestore not available');
+            }
         }
         
         // Initialize Storage
         if (firebase.storage) {
             FirebaseStorage = firebase.storage();
-            console.log('✅ Firebase Storage initialized');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Firebase Storage initialized');
+            }
         } else {
-            console.error('❌ Firebase Storage not available');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.error('❌ Firebase Storage not available');
+            }
         }
         
         // Initialize Auth
         if (firebase.auth) {
             FirebaseAuth = firebase.auth();
-            console.log('✅ Firebase Auth initialized');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Firebase Auth initialized');
+            }
         }
         
         // Initialize Analytics
         if (firebase.analytics && firebaseConfig.measurementId) {
             FirebaseAnalytics = firebase.analytics();
-            console.log('✅ Firebase Analytics initialized');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Firebase Analytics initialized');
+            }
         }
         
         // Initialize Functions
         if (firebase.functions) {
             FirebaseFunctions = firebase.functions();
-            console.log('✅ Firebase Functions initialized');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Firebase Functions initialized');
+            }
         }
         
-        console.log('🎉 All Firebase services initialized successfully!');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🎉 All Firebase services initialized successfully!');
+        }
         return true;
         
     } catch (error) {
-        console.error('❌ Firebase initialization failed:', error);
-        console.error('Error details:', error.message);
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.error('❌ Firebase initialization failed:', error);
+            console.error('Error details:', error.message);
+        }
         return false;
     }
 }

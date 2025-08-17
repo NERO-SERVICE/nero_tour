@@ -14,7 +14,9 @@ class SimpleDataService {
      * Firebase 초기화 및 Firestore 연결 (기존 초기화 재사용)
      */
     async initialize() {
-        console.log('🚀 SimpleDataService 초기화 시작...');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🚀 SimpleDataService 초기화 시작...');
+        }
         
         return new Promise((resolve) => {
             // Firebase와 전역 Firebase 객체가 로드될 때까지 대기
@@ -28,7 +30,9 @@ class SimpleDataService {
                         
                         if (this.db) {
                             this.isReady = true;
-                            console.log('✅ Firestore 연결 완료 (기존 초기화 재사용)');
+                            if (!window.CONFIG?.IS_PRODUCTION) {
+                                console.log('✅ Firestore 연결 완료 (기존 초기화 재사용)');
+                            }
                             
                             // 대기 중인 콜백 실행
                             this.readyCallbacks.forEach(callback => callback());
@@ -80,7 +84,9 @@ class SimpleDataService {
         }
 
         try {
-            console.log('📋 카테고리 로딩 중...');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('📋 카테고리 로딩 중...');
+            }
             const snapshot = await this.db.collection('categories').get();
             
             const categories = [];
@@ -91,7 +97,9 @@ class SimpleDataService {
                 });
             });
             
-            console.log(`✅ ${categories.length}개 카테고리 로드 완료`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`✅ ${categories.length}개 카테고리 로드 완료`);
+            }
             return categories;
         } catch (error) {
             console.error('❌ 카테고리 로드 실패:', error);
@@ -111,7 +119,9 @@ class SimpleDataService {
         }
 
         try {
-            console.log('📍 랜드마크 로딩 중...');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('📍 랜드마크 로딩 중...');
+            }
             const snapshot = await this.db.collection('landmarks').get();
             
             const landmarks = [];
@@ -130,7 +140,9 @@ class SimpleDataService {
                 });
             });
             
-            console.log(`✅ ${landmarks.length}개 랜드마크 로드 완료`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`✅ ${landmarks.length}개 랜드마크 로드 완료`);
+            }
             return landmarks;
         } catch (error) {
             console.error('❌ 랜드마크 로드 실패:', error);
@@ -150,11 +162,15 @@ class SimpleDataService {
         }
 
         try {
-            console.log(`📍 랜드마크 ${id} 로딩 중...`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`📍 랜드마크 ${id} 로딩 중...`);
+            }
             const doc = await this.db.collection('landmarks').doc(id).get();
             
             if (!doc.exists) {
-                console.warn(`⚠️ 랜드마크 ${id}를 찾을 수 없습니다`);
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.warn(`⚠️ 랜드마크 ${id}를 찾을 수 없습니다`);
+                }
                 return null;
             }
             
@@ -169,7 +185,9 @@ class SimpleDataService {
                 }))
             };
             
-            console.log(`✅ 랜드마크 ${id} 로드 완료`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`✅ 랜드마크 ${id} 로드 완룼`);
+            }
             return landmark;
         } catch (error) {
             console.error(`❌ 랜드마크 ${id} 로드 실패:`, error);
@@ -189,7 +207,9 @@ class SimpleDataService {
         }
 
         try {
-            console.log(`📍 카테고리 ${categoryId} 랜드마크 로딩 중...`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`📍 카테고리 ${categoryId} 랜드마크 로딩 중...`);
+            }
             const snapshot = await this.db
                 .collection('landmarks')
                 .where('category', '==', categoryId)
@@ -205,7 +225,9 @@ class SimpleDataService {
                 });
             });
             
-            console.log(`✅ ${landmarks.length}개 랜드마크 로드 완료`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`✅ ${landmarks.length}개 랜드마크 로드 완료`);
+            }
             return landmarks;
         } catch (error) {
             console.error(`❌ 카테고리 ${categoryId} 랜드마크 로드 실패:`, error);
@@ -288,7 +310,9 @@ class SimpleDataService {
      */
     clearCache() {
         // SimpleDataService는 캐시를 사용하지 않지만 호환성을 위해 추가
-        console.log('🗑️ Cache cleared (no-op in SimpleDataService)');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🗑️ Cache cleared (no-op in SimpleDataService)');
+        }
     }
 
     /**

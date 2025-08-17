@@ -74,5 +74,12 @@ Thumbs.db
 *.tmp
 *.temp
 
-# firebase 비공개 키
+# Firebase 비공개 키 및 보안 파일
 serviceAccountKey.json
+*.key
+*.pem
+*.p12
+
+# 추가 보안 파일
+.firebase/
+firebase-debug.log

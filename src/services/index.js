@@ -13,7 +13,9 @@ import imageService from './image-service.js';
  * @param {Object} config - 설정 객체
  */
 export const initializeServices = async (config = {}) => {
-    console.log('🚀 Initializing services...');
+    if (!window.CONFIG?.IS_PRODUCTION) {
+        console.log('🚀 Initializing services...');
+    }
 
     try {
         // 이미지 서비스 설정
@@ -43,13 +45,17 @@ export const initializeServices = async (config = {}) => {
             }
         }
 
-        console.log('✅ Services initialized successfully');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('✅ Services initialized successfully');
+        }
         
         // 서비스 상태 로그
-        console.log('📊 Service Status:', {
-            dataService: dataService.getServiceStatus(),
-            imageService: imageService.getServiceStatus()
-        });
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('📊 Service Status:', {
+                dataService: dataService.getServiceStatus(),
+                imageService: imageService.getServiceStatus()
+            });
+        }
 
     } catch (error) {
         console.error('❌ Service initialization failed:', error);
@@ -63,7 +69,9 @@ export const initializeServices = async (config = {}) => {
 export const clearAllCaches = () => {
     dataService.clearCache();
     imageService.clearImageCache();
-    console.log('🗑️ All caches cleared');
+    if (!window.CONFIG?.IS_PRODUCTION) {
+        console.log('🗑️ All caches cleared');
+    }
 };
 
 /**

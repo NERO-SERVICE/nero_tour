@@ -36,10 +36,14 @@ class ImageService {
                     const storageRef = this.storage.ref();
                     this.storageBaseUrl = `https://firebasestorage.googleapis.com/v0/b/${window.CONFIG.FIREBASE_CONFIG.storageBucket}/o`;
                     
-                    console.log('✅ Firebase Storage connected to ImageService');
+                    if (!window.CONFIG?.IS_PRODUCTION) {
+                        console.log('✅ Firebase Storage connected to ImageService');
+                    }
                     return true;
                 } catch (error) {
-                    console.warn('⚠️ Firebase Storage initialization error:', error);
+                    if (!window.CONFIG?.IS_PRODUCTION) {
+                        console.warn('⚠️ Firebase Storage initialization error:', error);
+                    }
                 }
             }
             
@@ -47,7 +51,9 @@ class ImageService {
             attempts++;
         }
 
-        console.warn('⚠️ Firebase Storage not available - using direct URLs');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.warn('⚠️ Firebase Storage not available - using direct URLs');
+        }
         return false;
     }
 
@@ -58,13 +64,17 @@ class ImageService {
      */
     getLandmarkImage(imagePath) {
         if (!imagePath) {
-            console.warn('⚠️ No image path provided');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.warn('⚠️ No image path provided');
+            }
             return this.fallbackImage;
         }
         
         // 이미 완전한 URL인 경우
         if (this.isFullUrl(imagePath)) {
-            console.log('📸 Using full URL:', imagePath);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('📸 Using full URL:', imagePath);
+            }
             return imagePath;
         }
 
@@ -78,17 +88,23 @@ class ImageService {
                 const encodedPath = encodeURIComponent(imagePath);
                 const firebaseUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/${encodedPath}?alt=media`;
                 
-                console.log(`🖼️ Firebase URL for ${imagePath}:`, firebaseUrl);
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.log(`🖼️ Firebase URL for ${imagePath}:`, firebaseUrl);
+                }
                 return firebaseUrl;
             } else {
-                console.warn('⚠️ CONFIG not available yet');
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.warn('⚠️ CONFIG not available yet');
+                }
             }
         } catch (error) {
             console.error('❌ Error generating Firebase URL:', error);
         }
 
         // Fallback: 기본 placeholder 이미지 반환
-        console.warn(`⚠️ Using fallback image for: ${imagePath}`);
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.warn(`⚠️ Using fallback image for: ${imagePath}`);
+        }
         return this.fallbackImage;
     }
 
@@ -155,7 +171,9 @@ class ImageService {
                 await this.loadImage(path);
                 return { path, status: 'loaded' };
             } catch (error) {
-                console.warn(`⚠️ Failed to preload image: ${path}`, error);
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.warn(`⚠️ Failed to preload image: ${path}`, error);
+                }
                 return { path, status: 'failed', error };
             }
         });
@@ -186,7 +204,9 @@ class ImageService {
      */
     addImageFallback(imgElement, fallbackSrc = this.fallbackImage) {
         if (!imgElement || imgElement.tagName !== 'IMG') {
-            console.warn('⚠️ Invalid image element provided');
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.warn('⚠️ Invalid image element provided');
+            }
             return;
         }
 
@@ -197,7 +217,9 @@ class ImageService {
 
         imgElement.addEventListener('error', () => {
             if (imgElement.src !== fallbackSrc) {
-                console.warn(`⚠️ Image load failed, using fallback: ${imgElement.src}`);
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.warn(`⚠️ Image load failed, using fallback: ${imgElement.src}`);
+                }
                 imgElement.src = fallbackSrc;
             }
         });
@@ -229,13 +251,17 @@ class ImageService {
         });
 
         if (imagePaths.length > 0) {
-            console.log(`🖼️ Preloading ${imagePaths.length} landmark images...`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`🖼️ Preloading ${imagePaths.length} landmark images...`);
+            }
             const results = await this.preloadImages(imagePaths);
             
             const successful = results.filter(r => r.status === 'loaded').length;
             const failed = results.filter(r => r.status === 'failed').length;
             
-            console.log(`✅ Preloaded ${successful} images, ${failed} failed`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`✅ Preloaded ${successful} images, ${failed} failed`);
+            }
         }
     }
 
@@ -296,7 +322,9 @@ class ImageService {
      */
     setCdnBaseUrl(cdnUrl) {
         this.cdnBaseUrl = cdnUrl.endsWith('/') ? cdnUrl.slice(0, -1) : cdnUrl;
-        console.log(`🌐 CDN base URL set to: ${this.cdnBaseUrl}`);
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log(`🌐 CDN base URL set to: ${this.cdnBaseUrl}`);
+        }
     }
 
     /**
@@ -305,7 +333,9 @@ class ImageService {
      */
     setBaseImagePath(basePath) {
         this.baseImagePath = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
-        console.log(`📁 Base image path set to: ${this.baseImagePath}`);
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log(`📁 Base image path set to: ${this.baseImagePath}`);
+        }
     }
 
     /**
@@ -314,14 +344,18 @@ class ImageService {
      */
     setFallbackImage(fallbackPath) {
         this.fallbackImage = fallbackPath;
-        console.log(`🖼️ Fallback image set to: ${this.fallbackImage}`);
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log(`🖼️ Fallback image set to: ${this.fallbackImage}`);
+        }
     }
 
     /**
      * 이미지 캐시를 초기화합니다
      */
     clearImageCache() {
-        console.log('🗑️ Image cache cleared');
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('🗑️ Image cache cleared');
+        }
     }
 
     /**
@@ -336,13 +370,17 @@ class ImageService {
         }
 
         try {
-            console.log(`📤 Uploading ${file.name} to ${path}...`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`📤 Uploading ${file.name} to ${path}...`);
+            }
             
             const storageRef = this.storage.ref(path);
             const snapshot = await storageRef.put(file);
             const downloadURL = await snapshot.ref.getDownloadURL();
             
-            console.log(`✅ Upload successful: ${downloadURL}`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`✅ Upload successful: ${downloadURL}`);
+            }
             return downloadURL;
             
         } catch (error) {
@@ -364,7 +402,9 @@ class ImageService {
         try {
             const storageRef = this.storage.ref(path);
             await storageRef.delete();
-            console.log(`🗑️ Deleted: ${path}`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`🗑️ Deleted: ${path}`);
+            }
         } catch (error) {
             console.error(`❌ Delete failed for ${path}:`, error);
             throw error;
@@ -402,7 +442,9 @@ class ImageService {
                 })
             );
             
-            console.log(`📋 Found ${imageList.length} images in ${folderPath}`);
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`📋 Found ${imageList.length} images in ${folderPath}`);
+            }
             return imageList;
             
         } catch (error) {
