@@ -11,36 +11,36 @@ class SimpleDataService {
     }
 
     /**
-     * Firebase 초기화 및 Firestore 연결
+     * Firebase 초기화 및 Firestore 연결 (기존 초기화 재사용)
      */
     async initialize() {
         console.log('🚀 SimpleDataService 초기화 시작...');
         
         return new Promise((resolve) => {
-            // Firebase가 로드될 때까지 대기
+            // Firebase와 전역 Firebase 객체가 로드될 때까지 대기
             const checkFirebase = setInterval(() => {
-                if (typeof firebase !== 'undefined' && window.CONFIG?.FIREBASE_CONFIG) {
+                if (typeof firebase !== 'undefined' && window.Firebase && window.Firebase.isInitialized()) {
                     clearInterval(checkFirebase);
                     
                     try {
-                        // Firebase 초기화
-                        if (!firebase.apps.length) {
-                            firebase.initializeApp(window.CONFIG.FIREBASE_CONFIG);
-                            console.log('✅ Firebase 앱 초기화 완료');
+                        // 이미 초기화된 Firebase 사용
+                        this.db = window.Firebase.db;
+                        
+                        if (this.db) {
+                            this.isReady = true;
+                            console.log('✅ Firestore 연결 완료 (기존 초기화 재사용)');
+                            
+                            // 대기 중인 콜백 실행
+                            this.readyCallbacks.forEach(callback => callback());
+                            this.readyCallbacks = [];
+                            
+                            resolve(true);
+                        } else {
+                            console.error('❌ Firestore 인스턴스를 찾을 수 없습니다');
+                            resolve(false);
                         }
-                        
-                        // Firestore 연결
-                        this.db = firebase.firestore();
-                        this.isReady = true;
-                        console.log('✅ Firestore 연결 완료');
-                        
-                        // 대기 중인 콜백 실행
-                        this.readyCallbacks.forEach(callback => callback());
-                        this.readyCallbacks = [];
-                        
-                        resolve(true);
                     } catch (error) {
-                        console.error('❌ Firebase 초기화 실패:', error);
+                        console.error('❌ Firestore 연결 실패:', error);
                         resolve(false);
                     }
                 }
@@ -50,7 +50,7 @@ class SimpleDataService {
             setTimeout(() => {
                 clearInterval(checkFirebase);
                 if (!this.isReady) {
-                    console.error('❌ Firebase 초기화 타임아웃');
+                    console.error('❌ Firebase 초기화 타임아웃 - Firebase가 먼저 초기화되어야 합니다');
                     resolve(false);
                 }
             }, 5000);
