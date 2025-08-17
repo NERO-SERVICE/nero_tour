@@ -1,0 +1,1686 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    overflow-x: hidden;
+}
+
+/* App Container - Mobile-First Design */
+.app-container {
+    max-width: 414px; /* iPhone Pro Max width - largest mobile device */
+    width: 100%;
+    min-height: 100vh;
+    background: #f8f9fa;
+    position: relative;
+    padding-bottom: 80px;
+    margin: 0 auto; /* Center on desktop */
+    box-shadow: 0 0 30px rgba(0,0,0,0.1); /* Desktop frame effect */
+}
+
+/* Header Styles */
+.app-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 20px 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.header-content h1 i {
+    color: #ff6b6b;
+    margin-right: 8px;
+}
+
+.tagline {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 15px;
+}
+
+.location-status {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    padding: 10px 15px;
+    border-radius: 25px;
+    font-size: 0.85rem;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.location-status i {
+    margin-right: 8px;
+    color: #4ecdc4;
+}
+
+/* Main Content */
+.main-content {
+    padding: 20px;
+}
+
+/* Current Location Card */
+/* Current location card styles removed - no longer needed */
+
+.full-address {
+    font-size: 0.95rem;
+    color: #667eea;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.coordinates {
+    font-size: 0.8rem;
+    color: #888;
+    font-family: monospace;
+}
+
+.status-message {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+.location-stats {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.stat-item i {
+    color: #4CAF50;
+    font-size: 0.9rem;
+}
+
+.stat-item i.fa-exclamation-triangle {
+    color: #FF9800;
+}
+
+.stat-item i.fa-spinner {
+    color: #2196F3;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.card-header h2 {
+    font-size: 1.3rem;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Refresh button styles removed - no longer needed */
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.loading i {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #667eea;
+}
+
+/* Locations Section */
+.locations-section h2 {
+    font-size: 1.4rem;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Locations Grid */
+.locations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.location-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+}
+
+.location-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.location-image {
+    width: 100%;
+    height: 200px; /* Dynamic height - will be adjusted by JavaScript */
+    min-height: 160px;
+    max-height: 280px;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px 16px 0 0;
+    flex-shrink: 0;
+    transition: height 0.3s ease;
+}
+
+.location-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+}
+
+.location-image i {
+    font-size: 3rem;
+    color: white;
+    opacity: 0.9;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.location-info {
+    padding: 15px 18px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.location-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.location-description {
+    font-size: 0.85rem;
+    color: #666;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.location-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto; /* Push tags to bottom */
+    min-height: 28px; /* Account for single line of tags */
+}
+
+.tag {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.distance-info {
+    background: #f1f8e9;
+    color: #558b2f;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Explore page styles - cleaned up */
+
+/* Bottom Navigation - Simplified 2-tab layout */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    padding: 10px 0 5px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.nav-item {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 12px 16px;
+    text-align: center;
+    color: #666;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    margin: 0 8px;
+}
+
+.nav-item.active {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.nav-item i {
+    display: block;
+    font-size: 1.4rem;
+    margin-bottom: 6px;
+}
+
+.nav-item span {
+    font-weight: 500;
+}
+
+/* Guide Section Styles */
+.guide-section {
+    margin-top: 40px;
+}
+
+.guide-content {
+    background: #f8f9fa !important;
+    padding: 25px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important;
+}
+
+.guide-content h3 {
+    color: #333 !important;
+    margin-bottom: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 1.3rem !important;
+    font-weight: 600 !important;
+}
+
+.guide-item {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.guide-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.guide-item h4 {
+    color: #667eea !important;
+    margin-bottom: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+}
+
+.guide-item p {
+    color: #555;
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+/* Mobile-Only Design (375px+ target) */
+.locations-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.app-header {
+    padding: 16px;
+}
+
+.header-content h1 {
+    font-size: 1.8rem;
+}
+
+.main-content {
+    padding: 16px;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Success/Error States */
+.success-state {
+    color: #4caf50;
+    background: #e8f5e8;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.error-state {
+    color: #f44336;
+    background: #ffeaea;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+/* ============ GOOGLE MAPS INTEGRATION STYLES ============ */
+
+/* API Key Warning */
+.api-warning {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    margin: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.api-warning h2 {
+    color: #ff6b6b;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.api-warning ol {
+    text-align: left;
+    margin: 20px 0;
+    padding-left: 20px;
+}
+
+.api-warning li {
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+.refresh-btn, .retry-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover, .retry-btn:hover {
+    background: #5a6fd8;
+    transform: translateY(-1px);
+}
+
+/* Map Container */
+.google-map {
+    width: 100%;
+    height: 60vh;
+    min-height: 400px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    position: relative;
+}
+
+.map-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    opacity: 0.9;
+}
+
+.map-loading i {
+    font-size: 2rem;
+    color: white;
+    margin-bottom: 10px;
+    animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.map-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: #ffeaea;
+    color: #f44336;
+    text-align: center;
+    padding: 20px;
+}
+
+.map-error h3 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+/* Map Controls */
+.map-controls {
+    background: white;
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.search-box input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-box button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.search-box button:hover {
+    background: #5a6fd8;
+}
+
+/* Map Filters */
+.map-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: #f8f9fa;
+    color: #666;
+    border: 1px solid #e9ecef;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* Map Actions */
+.map-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.action-btn:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+}
+
+.action-btn i {
+    font-size: 0.9rem;
+}
+
+/* Map Overlay */
+.map-overlay {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 280px;
+    max-width: calc(100% - 40px);
+    z-index: 10;
+}
+
+.location-quick-info {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+}
+
+.location-quick-info h3 {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.location-quick-info p {
+    color: #666;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.location-quick-info .korean-name {
+    color: #888;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+}
+
+.quick-actions {
+    margin-top: 10px;
+}
+
+.quick-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.3s ease;
+}
+
+.quick-btn:hover {
+    background: #5a6fd8;
+}
+
+/* Route Panel */
+.route-panel {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.route-panel h3 {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* Map Info Window Styles */
+.map-info-window {
+    max-width: 250px;
+    padding: 5px;
+}
+
+.map-info-window h3 {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.map-info-window .korean-name {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.map-info-window .description {
+    font-size: 0.85rem;
+    color: #666;
+    line-height: 1.3;
+    margin-bottom: 10px;
+}
+
+.info-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.info-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: background 0.3s ease;
+}
+
+.info-btn:hover {
+    background: #5a6fd8;
+}
+
+/* Mobile-Only Map Styles */
+.google-map {
+    height: 50vh;
+    min-height: 300px;
+}
+
+.map-overlay {
+    position: static;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.map-filters {
+    justify-content: center;
+}
+
+.filter-btn {
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    min-height: 44px; /* Touch target */
+}
+
+.map-actions {
+    justify-content: center;
+}
+
+.search-box {
+    flex-direction: column;
+    gap: 12px;
+}
+
+.search-box input,
+.search-box button {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px; /* Prevent zoom on iOS */
+}
+
+.map-controls {
+    padding: 16px;
+}
+
+/* ============ FULLSCREEN MAP MODE STYLES ============ */
+
+/* 전체 화면 지도 모드 */
+.app-container.fullscreen-map-mode {
+    padding-bottom: 0;
+    overflow: hidden;
+}
+
+.fullscreen-map-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background: #f8f9fa;
+}
+
+/* 전체 화면 Google Maps */
+.fullscreen-google-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+}
+
+/* 지도 컨테이너 확실한 크기 설정 */
+#googleMap {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 400px !important;
+}
+
+.fullscreen-google-map .map-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+}
+
+/* 지도 상단 컨트롤바 */
+.map-top-controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: #667eea;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: #5a6fd8;
+    transform: scale(1.05);
+}
+
+.map-search-container {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    margin-right: 15px;
+}
+
+.map-search-container input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+}
+
+.map-search-container input:focus {
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.map-search-container button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: #667eea;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.map-search-container button:hover {
+    background: #5a6fd8;
+}
+
+.map-control-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.control-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.control-btn:hover {
+    background: white;
+    transform: scale(1.05);
+}
+
+/* 필터 패널 */
+.filter-panel {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    z-index: 9;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.filter-panel.collapsed {
+    transform: translateY(-100%);
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.filter-buttons .filter-btn {
+    background: rgba(248, 249, 250, 0.9);
+    color: #666;
+    border: 1px solid #e9ecef;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.filter-buttons .filter-btn.active,
+.filter-buttons .filter-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: translateY(-1px);
+}
+
+/* 위치 상태 오버레이 */
+.location-status-overlay {
+    position: absolute;
+    top: 80px;
+    right: 15px;
+    background: rgba(76, 175, 80, 0.9);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.location-status-overlay.error {
+    background: rgba(244, 67, 54, 0.9);
+}
+
+.location-status-overlay.info {
+    background: rgba(33, 150, 243, 0.9);
+}
+
+.location-status-overlay i {
+    font-size: 0.9rem;
+}
+
+/* 마커 정보 카드 (하단에서 올라오는 형태) */
+.marker-info-card {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 20px 20px 0 0;
+    max-height: 60vh;
+    transform: translateY(100%);
+    transition: transform 0.4s ease;
+    z-index: 15;
+    overflow-y: auto;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+}
+
+.marker-info-card.visible {
+    transform: translateY(0);
+}
+
+.marker-info-card.hidden {
+    display: none;
+}
+
+.card-handle {
+    width: 40px;
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 12px auto 8px;
+}
+
+.card-content {
+    padding: 0 20px 30px;
+}
+
+.marker-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-title h3 {
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.info-title .korean-name {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.distance-badge {
+    background: #4CAF50;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.info-description {
+    margin-bottom: 20px;
+}
+
+.info-description p {
+    color: #666;
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+.info-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.detail-item i {
+    color: #667eea;
+    width: 20px;
+    text-align: center;
+}
+
+.detail-item span {
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.info-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.info-tags .tag {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.info-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.action-button {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.action-button.primary {
+    background: #667eea;
+    color: white;
+}
+
+.action-button.primary:hover {
+    background: #5a6fd8;
+    transform: translateY(-1px);
+}
+
+.action-button.secondary {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #e9ecef;
+}
+
+.action-button.secondary:hover {
+    background: #e9ecef;
+    transform: translateY(-1px);
+}
+
+/* 반응형 전체 화면 지도 */
+@media (max-width: 768px) {
+    .map-top-controls {
+        height: 55px;
+        padding: 0 10px;
+    }
+    
+    .back-btn {
+        width: 35px;
+        height: 35px;
+        margin-right: 10px;
+    }
+    
+    .map-search-container {
+        margin-right: 10px;
+    }
+    
+    .map-search-container input {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+    
+    .control-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .location-status-overlay {
+        top: 70px;
+        right: 10px;
+        font-size: 0.75rem;
+        padding: 6px 12px;
+    }
+    
+    .marker-info-card {
+        max-height: 70vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .map-search-container {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .map-control-buttons {
+        gap: 8px;
+    }
+    
+    .filter-buttons {
+        gap: 6px;
+    }
+    
+    .filter-buttons .filter-btn {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+    }
+    
+    .info-actions {
+        flex-direction: column;
+    }
+    
+    .action-button {
+        width: 100%;
+    }
+}
+
+/* Search Results & Enhanced UI Styles */
+
+/* Search status overlays */
+.search-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.search-status.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.search-status.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.search-status.no-results {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* Search result info windows */
+.search-info-window {
+    min-width: 250px;
+    max-width: 300px;
+    padding: 12px;
+    line-height: 1.4;
+}
+
+.search-info-window .place-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #2c3e50;
+}
+
+.search-info-window .place-rating {
+    font-size: 0.9rem;
+    color: #f39c12;
+    margin-bottom: 8px;
+}
+
+.search-info-window .place-address {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.search-info-window .price-level {
+    font-size: 0.85rem;
+    color: #27ae60;
+    margin-bottom: 8px;
+}
+
+.search-info-window .place-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.search-info-window .info-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border: 1px solid #3498db;
+    background: #3498db;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.search-info-window .info-btn:hover {
+    background: #2980b9;
+    border-color: #2980b9;
+}
+
+/* Place details modal */
+.place-details-modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 500px;
+    max-height: 80vh;
+    width: 90vw;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.place-details-modal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.place-details-modal .modal-header h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.place-details-modal .close-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.place-details-modal .close-modal:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.place-details-modal .modal-content {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.place-photos {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.place-photos .place-photo {
+    width: 120px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.place-info {
+    margin-bottom: 20px;
+}
+
+.place-info .info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.place-info .info-item:last-child {
+    border-bottom: none;
+}
+
+.place-info .info-item i {
+    color: #3498db;
+    width: 16px;
+    text-align: center;
+}
+
+.place-info .info-item a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.place-info .info-item a:hover {
+    text-decoration: underline;
+}
+
+.place-reviews h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: #2c3e50;
+}
+
+.place-reviews .review {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.place-reviews .review-author {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    margin-bottom: 6px;
+}
+
+.place-reviews .review-text {
+    font-size: 0.85rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Enhanced location status overlay */
+.location-status-overlay.success {
+    background: rgba(76, 175, 80, 0.95);
+}
+
+.location-status-overlay.error {
+    background: rgba(244, 67, 54, 0.95);
+}
+
+.location-status-overlay.info {
+    background: rgba(33, 150, 243, 0.95);
+}
+
+/* Mobile optimizations for search */
+@media (max-width: 768px) {
+    .search-info-window {
+        min-width: 200px;
+        max-width: 250px;
+    }
+    
+    .place-details-modal {
+        width: 95vw;
+        max-height: 85vh;
+    }
+    
+    .place-photos .place-photo {
+        width: 100px;
+        height: 70px;
+    }
+    
+    .place-details-modal .modal-content {
+        padding: 16px;
+        max-height: 70vh;
+    }
+}
+
+/* Mobile-Optimized Map Controls */
+.map-search-container input[type="text"] {
+    padding: 12px 16px !important;
+    font-size: 16px !important; /* Prevent zoom on iOS */
+    border-radius: 12px !important;
+}
+
+.map-search-container button {
+    min-width: 48px !important; /* Larger touch targets */
+    min-height: 48px !important;
+    border-radius: 12px !important;
+}
+
+/* Loading states */
+.search-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Mobile Touch Interactions */
+.location-card:active .location-image img {
+    transform: scale(1.02);
+}
+
+.location-image .icon-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: inherit;
+    color: white;
+    font-size: 2rem;
+}
+
+/* Korean name styling */
+.location-korean {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 4px 0 8px 0;
+    font-weight: 500;
+}
+
+/* Modal hero image */
+.location-hero-image {
+    width: calc(100% + 40px);
+    margin: -60px -20px 20px -20px;
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.location-hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Mobile-Optimized Images and UI */
+.location-image {
+    aspect-ratio: 4/5;
+    height: 180px;
+}
+
+.location-hero-image {
+    height: 150px;
+    margin: -56px -20px 20px -20px;
+}
+
+.location-image .icon-fallback {
+    font-size: 1.5rem;
+}
+
+.close-modal {
+    width: 48px;
+    height: 48px;
+    top: 12px;
+    right: 12px;
+    font-size: 1.2rem;
+    min-height: 44px;
+}
+
+.modal-content {
+    padding: 60px 20px 30px;
+}
+
+/* Detail Page Mobile Styling */
+.detail-hero {
+    height: 200px;
+}
+
+.detail-hero-title {
+    font-size: 1.6rem;
+}
+
+.detail-hero-subtitle {
+    font-size: 1rem;
+}
+
+.detail-main-content {
+    padding: 20px 16px;
+}
+
+.detail-section-image {
+    height: 160px;
+}
+
+.detail-section-title {
+    font-size: 1.2rem;
+}
+
+/* ==================== Skeleton Loading Styles ==================== */
+.skeleton-card {
+    pointer-events: none;
+    cursor: default;
+}
+
+.skeleton-image,
+.skeleton-title,
+.skeleton-subtitle,
+.skeleton-description,
+.skeleton-tag {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-image {
+    width: 100%;
+    height: 180px;
+    border-radius: 8px;
+}
+
+.skeleton-title {
+    height: 24px;
+    width: 70%;
+    margin-bottom: 8px;
+}
+
+.skeleton-subtitle {
+    height: 16px;
+    width: 50%;
+    margin-bottom: 12px;
+}
+
+.skeleton-description {
+    height: 14px;
+    width: 90%;
+    margin-bottom: 16px;
+}
+
+.skeleton-tags {
+    display: flex;
+    gap: 8px;
+}
+
+.skeleton-tag {
+    height: 24px;
+    width: 60px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+/* ==================== Image Loading Styles ==================== */
+.location-image {
+    position: relative;
+    overflow: hidden;
+}
+
+.location-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Smooth transition for fallback icons */
+.icon-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 2.5rem;
+    border-radius: 8px;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.icon-fallback i {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

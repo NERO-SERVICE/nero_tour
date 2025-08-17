@@ -1,0 +1,25 @@
+{
+  "name": "nero-tour-migration",
+  "version": "1.0.0",
+  "description": "Firebase migration scripts for Nero Tour",
+  "type": "module",
+  "scripts": {
+    "migrate": "node migration.js",
+    "migrate:clear": "node migration.js clear",
+    "migrate:reset": "node migration.js reset",
+    "migrate:help": "node migration.js help"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "firebase": "^10.12.0",
+    "firebase-admin": "^13.4.0"
+  },
+  "keywords": [
+    "firebase",
+    "migration",
+    "firestore",
+    "nero-tour"
+  ],
+  "author": "",
+  "license": "ISC"
+}

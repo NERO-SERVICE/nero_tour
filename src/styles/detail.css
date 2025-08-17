@@ -1,0 +1,565 @@
+/* Detail Page Styles - Mobile First Design */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.detail-container {
+    max-width: 414px; /* iPhone Pro Max width - mobile only */
+    width: 100%;
+    min-height: 100vh;
+    background: #ffffff;
+    position: relative;
+    margin: 0 auto;
+    box-shadow: 0 0 30px rgba(0,0,0,0.1);
+}
+
+/* Fixed Header */
+.detail-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #333;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-right: 12px;
+}
+
+.back-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transform: scale(1.05);
+}
+
+.header-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    flex: 1;
+}
+
+/* Scrollable Content */
+.detail-content {
+    padding-top: 60px;
+    min-height: 100vh;
+    padding-bottom: 80px; /* Space for FAB */
+}
+
+/* Loading and Error States */
+.loading-state, .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.loading-state i {
+    font-size: 2rem;
+    color: #667eea;
+    margin-bottom: 16px;
+}
+
+.error-state i {
+    font-size: 2rem;
+    color: #dc3545;
+    margin-bottom: 16px;
+}
+
+.retry-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 500;
+    margin-top: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.retry-btn:hover {
+    background: #5a6fd8;
+    transform: translateY(-1px);
+}
+
+/* Hero Section */
+.detail-hero {
+    width: 100%;
+    aspect-ratio: 5/4; /* Mobile optimized 5:4 ratio */
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.detail-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.detail-hero.no-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.detail-hero.no-image::before {
+    content: "\f3c5";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.detail-hero-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: white;
+    padding: 40px 20px 24px;
+}
+
+.detail-hero-title {
+    font-size: 2.2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.detail-hero-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* Main Content */
+.detail-main-content {
+    padding: 24px 20px;
+}
+
+/* Tags */
+.detail-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.detail-tag {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Main Description */
+.detail-main-description {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #444;
+    margin-bottom: 32px;
+}
+
+/* Content Sections */
+.detail-section {
+    margin-bottom: 32px;
+}
+
+.detail-section-image {
+    width: 100%;
+    aspect-ratio: 5/4; /* Mobile 5:4 aspect ratio */
+    overflow: hidden;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: block;
+    position: relative;
+}
+
+.detail-section-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.detail-section-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    line-height: 1.3;
+}
+
+.detail-section-description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #555;
+}
+
+/* Practical Info Section */
+.practical-info {
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 24px 0;
+}
+
+.practical-info h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+.info-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.info-item i {
+    color: #667eea;
+    margin-top: 2px;
+    width: 20px;
+    font-size: 1rem;
+}
+
+.info-item-content {
+    flex: 1;
+}
+
+.info-item-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.info-item-value {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Tips Section */
+.tips-section {
+    margin: 24px 0;
+}
+
+.tips-section h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tips-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tips-list li {
+    background: #fff8e1;
+    border-left: 4px solid #ffc107;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Floating Action Button */
+.fab-container {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    z-index: 50;
+}
+
+.fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: #667eea;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fab:hover {
+    background: #5a6fd8;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.fab:active {
+    transform: translateY(0);
+}
+
+/* Subway Stations Section */
+.subway-stations {
+    margin-top: 24px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.subway-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.station-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.station-item.no-exit {
+    grid-template-columns: auto 1fr;
+}
+
+.station-lines {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* Seoul Subway Line Colors - Official */
+.subway-line {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: white;
+    font-family: 'SeoulNamsan', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: bold;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Seoul Metropolitan Subway Lines */
+.subway-line.line-1 { background: #0052A4; }
+.subway-line.line-2 { background: #00A84D; }
+.subway-line.line-3 { background: #EF7C1C; }
+.subway-line.line-4 { background: #00A5DE; }
+.subway-line.line-5 { background: #996CAC; }
+.subway-line.line-6 { background: #CD7C2F; }
+.subway-line.line-7 { background: #747F00; }
+.subway-line.line-8 { background: #E6186C; }
+.subway-line.line-9 { background: #BDB092; }
+
+/* Seoul Metro Special Lines */
+.subway-line.line-경의중앙 { background: #77C4A3; }
+.subway-line.line-공항철도 { background: #0090D2; }
+.subway-line.line-경춘 { background: #0C8E72; }
+.subway-line.line-수인분당 { background: #FABE00; color: #333; }
+.subway-line.line-신분당 { background: #D4003B; }
+.subway-line.line-경강 { background: #003DA5; }
+.subway-line.line-서해 { background: #8FC31F; }
+.subway-line.line-인천1 { background: #7CA8D5; }
+.subway-line.line-인천2 { background: #ED8B00; }
+.subway-line.line-의정부 { background: #FDA600; }
+.subway-line.line-에버라인 { background: #6FB245; }
+.subway-line.line-경전철 { background: #B0CE18; }
+.subway-line.line-신림 { background: #6789CA; }
+.subway-line.line-김포골드 { background: #A17E46; }
+.subway-line.line-GTX-A { background: #9B6292; }
+
+.station-name-wrapper {
+    display: flex;
+    flex: 1;
+    min-width: 0; /* Allow text to shrink */
+    justify-content: center;
+}
+
+/* Horizontal layout (default for short names) */
+.station-name-wrapper.horizontal {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Vertical layout (for long names) */
+.station-name-wrapper.vertical {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 0;
+}
+
+.name-korean {
+    font-family: 'SeoulNamsan', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    white-space: nowrap;
+}
+
+.name-english {
+    font-size: 0.9rem;
+    color: #666;
+    white-space: nowrap;
+}
+
+/* Adjust font sizes for vertical layout */
+.station-name-wrapper.vertical .name-korean {
+    font-size: 0.95rem;
+}
+
+.station-name-wrapper.vertical .name-english {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.station-exit-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.station-exits {
+    font-size: 0.85rem;
+    color: #777;
+    padding: 4px 10px;
+    background: #f0f0f0;
+    border-radius: 12px;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+/* Adjust grid for vertical names */
+.station-item.vertical-names {
+    min-height: 60px; /* Ensure enough height for vertical layout */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 360px) {
+    .station-item {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto;
+    }
+    
+    .station-item.no-exit {
+        grid-template-rows: auto;
+    }
+    
+    .station-exit-wrapper {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+        margin-top: 8px;
+    }
+    
+    .subway-line {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+    
+    .station-name-wrapper.vertical .name-korean {
+        font-size: 0.85rem;
+    }
+    
+    .station-name-wrapper.vertical .name-english {
+        font-size: 0.75rem;
+    }
+    
+    .station-name-wrapper.horizontal .name-korean {
+        font-size: 0.9rem;
+    }
+    
+    .station-name-wrapper.horizontal .name-english {
+        font-size: 0.8rem;
+    }
+}
+
+/* Seoul Namsan Font */
+@font-face {
+    font-family: 'SeoulNamsan';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/SeoulNamsanM.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Remove all responsive styles - Mobile only design */
+/* No tablet or desktop media queries needed */

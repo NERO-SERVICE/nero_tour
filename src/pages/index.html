@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seoul Explorer - Discover Korea</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Firebase CDN - 순서 중요! -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+    
+    <!-- Configuration -->
+    <script src="../config/config.js"></script>
+    <script src="../config/firebase.js"></script>
+    
+    <!-- Google Maps API for Geocoding -->
+    <script>
+        function initializeGoogleMaps() {
+            console.log('✅ Google Maps API loaded for index page');
+            // Notify explorer.js that Google Maps is ready
+            if (window.seoulExplorer && window.seoulExplorer.onGoogleMapsReady) {
+                window.seoulExplorer.onGoogleMapsReady();
+            }
+        }
+        
+        // Load Google Maps API
+        function loadGoogleMapsAPI() {
+            if (window.google && window.google.maps) {
+                console.log('♻️ Google Maps already loaded');
+                initializeGoogleMaps();
+                return;
+            }
+            
+            if (!CONFIG.GOOGLE_MAPS_API_KEY || CONFIG.GOOGLE_MAPS_API_KEY.includes('NOT_SET')) {
+                console.error('❌ Invalid Google Maps API key');
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_MAPS_API_KEY}&libraries=places,geometry&callback=initializeGoogleMaps&language=en&region=US`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+        
+        // Load Google Maps when config is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(loadGoogleMapsAPI, 100); // Small delay to ensure config is loaded
+        });
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1><i class="fas fa-map-marker-alt"></i> Seoul Explorer</h1>
+                <p class="tagline">Discover Seoul's Hidden Gems</p>
+            </div>
+            <div class="location-status" id="locationStatus">
+                <i class="fas fa-location-arrow"></i>
+                <span id="currentLocation">Getting your location...</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Popular Locations Grid -->
+            <section class="locations-section" id="locationsSection">
+                <h2>Popular Seoul Destinations</h2>
+                <div id="locationInfo" class="location-info-section" style="margin-bottom: 20px;">
+                    <!-- Location info will be populated by JavaScript -->
+                </div>
+                <div class="locations-grid" id="locationsGrid">
+                    <!-- Location buttons will be populated by JavaScript -->
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-section="explore">
+                <i class="fas fa-compass"></i>
+                <span>Explore</span>
+            </button>
+            <button class="nav-item" data-section="map">
+                <i class="fas fa-map"></i>
+                <span>Map</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Scripts - ES6 Modules -->
+    <script type="module" src="../components/explorer.js"></script>
+    <script type="module" src="../services/maps-manager.js"></script>
+    <script type="module" src="../utils/enhanced-app.js"></script>
+    
+    <!-- Google Maps API -->
+    <script>
+        // Global error handler for Google Maps
+        window.gm_authFailure = function() {
+            console.error('Google Maps authentication failed');
+            showMapError('Google Maps authentication failed. Please check your API key.');
+        };
+        
+        function showMapError(message) {
+            const mapContainer = document.getElementById('map');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #666;">
+                        <h3>Map Loading Error</h3>
+                        <p>${message}</p>
+                        <p>Please check your internet connection and try again.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Direct map navigation function (backup method)
+        window.openMapPageDirect = function() {
+            console.log('🗺️ Direct map navigation triggered');
+            
+            try {
+                // Show immediate visual feedback
+                const mapButton = document.querySelector('.nav-item[data-section="map"]');
+                if (mapButton) {
+                    mapButton.style.opacity = '0.7';
+                    mapButton.innerHTML = `
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Loading...</span>
+                    `;
+                }
+
+                // Multiple navigation attempts
+                const attempts = [
+                    () => window.location.href = 'map.html',
+                    () => window.location.assign('map.html'),
+                    () => window.location.replace('map.html'),
+                    () => window.location.href = './map.html',
+                    () => window.location.href = '/src/pages/map.html'
+                ];
+
+                attempts.forEach((attempt, index) => {
+                    setTimeout(() => {
+                        try {
+                            console.log(`🔄 Navigation attempt ${index + 1}`);
+                            attempt();
+                        } catch (error) {
+                            console.warn(`⚠️ Attempt ${index + 1} failed:`, error);
+                        }
+                    }, index * 50);
+                });
+
+            } catch (error) {
+                console.error('❌ Direct navigation failed:', error);
+                alert('Could not open map. Please refresh the page and try again.');
+            }
+        };
+
+        // Add click event listener to map button as backup
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📱 Adding backup map button listener...');
+            
+            const mapButton = document.querySelector('.nav-item[data-section="map"]');
+            if (mapButton) {
+                // Remove any existing onclick to avoid double execution
+                mapButton.removeAttribute('onclick');
+                
+                // Add new click handler
+                mapButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🗺️ Map button clicked (backup handler)');
+                    
+                    openMapPageDirect();
+                }, { passive: false });
+                
+                console.log('✅ Backup map button listener added');
+            } else {
+                console.error('❌ Map button not found for backup listener');
+            }
+        });
+
+        // Main page initialization - Map functionality moved to separate page
+        console.log('🚀 Seoul Explorer main page loaded');
+        console.log('📍 Environment:', window.BUILD_INFO?.environment || 'unknown');
+        console.log('📁 Config source:', window.BUILD_INFO?.source || 'unknown');
+    </script>
+</body>
+</html>

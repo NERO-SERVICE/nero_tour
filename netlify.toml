@@ -1,0 +1,76 @@
+[build]
+  # Build command - unified build script that detects environment
+  command = "node build.js"
+  
+  # Publish directory - the root directory since it's a static site
+  publish = "."
+
+[build.environment]
+  # Node.js version for build process
+  NODE_VERSION = "18"
+
+# Custom headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://www.gstatic.com https://www.google.com https://cdnjs.cloudflare.com https://apis.google.com https://www.googletagmanager.com https://maps.gstatic.com; connect-src 'self' https://maps.googleapis.com https://www.googleapis.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.google-analytics.com https://maps.gstatic.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com; img-src 'self' data: https: blob: https://maps.googleapis.com https://maps.gstatic.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;"
+
+# Cache static assets
+# HTML은 항상 재검사(사파리 대응)
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# 루트도 명시 (리라이트 때문에 필요)
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"    
+
+# 서비스워커가 있다면 즉시 갱신되게
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-store"
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/public/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+# Map page routing
+[[redirects]]
+  from = "/map"
+  to = "/src/pages/map.html"
+  status = 200
+
+# Detail page routing  
+[[redirects]]
+  from = "/detail"
+  to = "/src/pages/detail.html"
+  status = 200
+
+# Handle 404s by redirecting to main app
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404

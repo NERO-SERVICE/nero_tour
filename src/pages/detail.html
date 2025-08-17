@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seoul Explorer - Location Details</title>
+    <link rel="stylesheet" href="../styles/detail.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+    
+    <!-- Configuration -->
+    <script src="../config/config.js"></script>
+    <script src="../config/firebase.js"></script>
+</head>
+<body>
+    <div class="detail-container">
+        <!-- Fixed Header with Back Button -->
+        <header class="detail-header">
+            <button class="back-btn" id="backBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="header-title" id="headerTitle">Seoul Explorer</div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <main class="detail-content" id="detailContent">
+            <!-- Loading state -->
+            <div class="loading-state" id="loadingState">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading location details...</p>
+            </div>
+            
+            <!-- Error state -->
+            <div class="error-state" id="errorState" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Location not found</p>
+                <button class="retry-btn" onclick="window.location.href='index.html'">
+                    Return to Explore
+                </button>
+            </div>
+            
+            <!-- Content will be populated by JavaScript -->
+        </main>
+
+        <!-- Floating Action Button -->
+        <div class="fab-container">
+            <button class="fab directions-fab" id="directionsFab" style="display: none;">
+                <i class="fas fa-directions"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts - ES6 Modules -->
+    <script type="module" src="../components/detail-page.js"></script>
+    
+    <!-- Inline initialization script -->
+    <script>
+        // Add debug indicator
+        console.log('=== DETAIL.HTML DEBUG START ===');
+        console.log('Document ready state:', document.readyState);
+        console.log('URL:', window.location.href);
+        console.log('Search params:', window.location.search);
+        
+        // Force initialization if detail.js didn't load properly
+        setTimeout(() => {
+            console.log('Timeout check - DetailPage type:', typeof DetailPage);
+            const loadingState = document.getElementById('loadingState');
+            console.log('Loading state element:', loadingState);
+            console.log('Loading state display:', loadingState ? loadingState.style.display : 'not found');
+            
+            if (loadingState && loadingState.style.display !== 'none') {
+                console.log('DetailPage not initialized, forcing initialization...');
+                try {
+                    if (typeof DetailPage !== 'undefined' && !window.detailPageInstance) {
+                        console.log('Creating new DetailPage instance...');
+                        const detailPage = new DetailPage();
+                        window.detailPageInstance = detailPage;
+                    } else if (window.detailPageInstance) {
+                        console.log('DetailPage already initialized');
+                    } else {
+                        console.error('DetailPage class not found');
+                        document.getElementById('errorState').style.display = 'flex';
+                        loadingState.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Force initialization failed:', error);
+                    document.getElementById('errorState').style.display = 'flex';
+                    loadingState.style.display = 'none';
+                }
+            } else {
+                console.log('DetailPage appears to be initialized properly');
+            }
+        }, 1000);
+        
+        console.log('=== DETAIL.HTML DEBUG END ===');
+    </script>
+</body>
+</html>
