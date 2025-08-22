@@ -808,39 +808,32 @@ class SeoulMapManager {
                 
                 await this.handleLocationSuccess();
             } else {
-                // Permission was denied or not available
-                if (locationText) {
-                    locationText.textContent = 'Seoul, South Korea';
-                }
-                
-                const permissionState = geolocationService.getPermissionState();
-                if (permissionState.hasBeenDenied) {
-                    console.log('📍 Using default location - permission denied');
-                } else {
-                    console.log('📍 Using default location - permission not available');
-                }
-                
-                // Use default Seoul coordinates
-                this.currentLocation = { lat: 37.5665, lng: 126.9780 };
-                
-                if (this.map) {
-                    this.updateUserLocationOnMap();
-                }
+                // Permission was denied or not available - use default location
+                this.useDefaultLocation();
                 return;
             }
         } catch (error) {
             console.error('❌ Location error:', error.message);
-            
-            if (locationText) {
-                locationText.textContent = 'Seoul, South Korea';
-            }
-            
-            // Use default Seoul coordinates
-            this.currentLocation = { lat: 37.5665, lng: 126.9780 };
-            
-            if (this.map) {
-                this.updateUserLocationOnMap();
-            }
+            this.useDefaultLocation();
+        }
+    }
+
+    // Use default Seoul location when location services are unavailable
+    useDefaultLocation() {
+        const locationText = document.getElementById('currentLocationText');
+        
+        if (locationText) {
+            locationText.textContent = 'Seoul, South Korea';
+        }
+        
+        console.log('📍 Using default Seoul location');
+        
+        // Use default Seoul coordinates
+        this.currentLocation = { lat: 37.5665, lng: 126.9780 };
+        
+        // Update map if already initialized
+        if (this.map) {
+            this.updateUserLocationOnMap();
         }
     }
 

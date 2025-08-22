@@ -32,9 +32,11 @@ class SeoulExplorer {
             // 랜드마크 데이터 로드
             this.landmarks = await dataService.getAllLandmarks();
             
-            // 실제 카드 렌더링
+            // 실제 카드 렌더링 (위치 권한 없어도 모든 데이터 표시)
             await this.renderLocationCards();
-            this.getCurrentLocation(); // Get location only once on load
+            
+            // 위치 권한 체크는 별도로 처리 (실패해도 앱은 정상 동작)
+            this.initializeLocationServices();
             
             if (!window.CONFIG?.IS_PRODUCTION) {
                 console.log('✅ Seoul Explorer initialized successfully');
@@ -54,7 +56,9 @@ class SeoulExplorer {
         this.landmarks = []; // 빈 배열로 초기화
         this.initializeEventListeners();
         this.renderLocationCards();
-        this.getCurrentLocation(); // Get location only once on load
+        
+        // 위치 권한은 별도로 처리
+        this.initializeLocationServices();
         this.setupCardResizeObserver();
     }
 
@@ -71,6 +75,48 @@ class SeoulExplorer {
             console.error('❌ Error loading landmarks from service:', error);
             return []; // 빈 배열 반환
         }
+    }
+
+    // Initialize location services separately (non-blocking)
+    async initializeLocationServices() {
+        try {
+            await this.getCurrentLocation();
+        } catch (error) {
+            // Location services failed, but app continues to work
+            console.warn('⚠️ Location services unavailable:', error.message);
+            this.useDefaultLocation();
+        }
+    }
+
+    // Use default Seoul location when location services are unavailable
+    useDefaultLocation() {
+        const locationStatus = document.getElementById('currentLocation');
+        const locationInfo = document.getElementById('locationInfo');
+        
+        if (locationStatus) {
+            locationStatus.textContent = 'Seoul, South Korea';
+        }
+        
+        if (locationInfo) {
+            locationInfo.innerHTML = `
+                <div class="default-state">
+                    <h3>📍 Exploring Seoul</h3>
+                    <p>Discover amazing attractions throughout Seoul!</p>
+                    <p style="margin-top: 10px;">
+                        <button onclick="seoulExplorer.initializeLocationServices()" 
+                                style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer;">
+                            Enable Location Features
+                        </button>
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Set default Seoul coordinates for distance calculations
+        this.currentLocation = { lat: 37.5665, lng: 126.9780 };
+        
+        // Update distances with default location
+        this.updateDistances();
     }
 
     // Geolocation API Integration using smart permission architecture
@@ -219,7 +265,7 @@ class SeoulExplorer {
                         2. Allow location access when prompted<br>
                         3. Future visits won't ask again
                     </div>
-                    <button onclick="seoulExplorer.requestLocationPermission()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
+                    <button onclick="seoulExplorer.forceLocationRequest()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
                         Request Location
                     </button>
                 </div>
@@ -320,6 +366,11 @@ class SeoulExplorer {
     }
 
     async updateDistances() {
+        // Skip distance updates if no current location available
+        if (!this.currentLocation) {
+            return;
+        }
+        
         const locationCards = document.querySelectorAll('.location-card');
         
         try {
@@ -1206,6 +1257,70 @@ class SeoulExplorer {
             } else {
                 this.handleLocationError(error.message);
             }
+        }
+    }
+
+    // Force location request (for refresh button and retry scenarios)
+    async forceLocationRequest() {
+        try {
+            console.log('🔄 Forcing new location request...');
+            
+            // Reset permission state to allow new prompts
+            geolocationService.clearPermissionState();
+            
+            // Clear any cached location data
+            sessionStorage.removeItem('nero_user_location');
+            
+            // Show loading state
+            const locationStatus = document.getElementById('currentLocation');
+            const locationInfo = document.getElementById('locationInfo');
+            
+            if (locationStatus) {
+                locationStatus.textContent = 'Requesting permission...';
+            }
+            
+            if (locationInfo) {
+                locationInfo.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #667eea; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
+                        <p>Requesting location permission...</p>
+                    </div>
+                    <style>
+                        @keyframes spin {
+                            to { transform: rotate(360deg); }
+                        }
+                    </style>
+                `;
+            }
+            
+            // Force a fresh permission request
+            const result = await geolocationService.requestLocationWithPrompt({
+                enableHighAccuracy: false,
+                timeout: 15000,
+                maximumAge: 0 // Force fresh request
+            });
+            
+            this.currentLocation = result;
+            
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('📍 Location granted via force request:', this.currentLocation);
+            }
+            
+            // Handle successful location
+            this.handleLocationSuccess();
+            
+            // Start real-time tracking
+            this.startRealTimeLocationTracking();
+            
+        } catch (error) {
+            console.error('❌ Force location request failed:', error.message);
+            
+            // Show user-friendly error message
+            this.handleLocationError(
+                error.message.includes('denied') 
+                    ? 'Location access was denied. Please check your browser settings and try again.'
+                    : 'Unable to get location. Please check your device settings.'
+            );
         }
     }
 
