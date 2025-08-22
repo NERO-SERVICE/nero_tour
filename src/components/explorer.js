@@ -93,6 +93,9 @@ class SeoulExplorer {
             if (cachedLocation && geolocationService.getPermissionState().hasBeenGranted) {
                 this.currentLocation = cachedLocation;
                 this.handleLocationSuccess();
+                
+                // Start real-time location tracking for cached location too
+                this.startRealTimeLocationTracking();
                 return;
             }
 
@@ -120,6 +123,9 @@ class SeoulExplorer {
                 }
                 
                 this.handleLocationSuccess();
+                
+                // Start real-time location tracking after successful initial location
+                this.startRealTimeLocationTracking();
             } else {
                 // Permission was denied recently or permanently blocked
                 if (locationStatus) {
@@ -1183,6 +1189,9 @@ class SeoulExplorer {
             // Handle successful location
             this.handleLocationSuccess();
             
+            // Start real-time location tracking for manual request too
+            this.startRealTimeLocationTracking();
+            
         } catch (error) {
             console.error('❌ Manual location request failed:', error.message);
             
@@ -1200,9 +1209,104 @@ class SeoulExplorer {
         }
     }
 
+    // Start real-time location tracking
+    async startRealTimeLocationTracking() {
+        try {
+            // Register callback for location updates
+            geolocationService.addLocationCallback((location) => {
+                this.handleRealTimeLocationUpdate(location);
+            });
+
+            // Start real-time tracking with optimized settings
+            await geolocationService.startRealTimeTracking({
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 30000,
+                threshold: 10 // 10 meters minimum change
+            });
+
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Real-time location tracking started');
+            }
+
+        } catch (error) {
+            console.error('❌ Failed to start real-time tracking:', error.message);
+        }
+    }
+
+    // Handle real-time location updates
+    handleRealTimeLocationUpdate(location) {
+        const previousLocation = this.currentLocation;
+        this.currentLocation = location;
+
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('📍 Real-time location update:', location);
+        }
+
+        // Update UI elements
+        this.updateLocationDisplay(location);
+        
+        // Update distances to landmarks
+        this.updateDistances();
+        
+        // Update any map elements if present
+        if (window.seoulMapManager && typeof window.seoulMapManager.updateUserLocationOnMap === 'function') {
+            window.seoulMapManager.updateUserLocationOnMap();
+        }
+
+        // Show subtle notification for significant changes
+        if (previousLocation) {
+            const distance = this.calculateDistance(
+                previousLocation.lat, previousLocation.lng,
+                location.lat, location.lng
+            );
+            
+            if (distance > 0.1) { // More than 100 meters
+                this.showLocationUpdateNotification();
+            }
+        }
+    }
+
+    // Update location display in UI
+    async updateLocationDisplay(location) {
+        const locationStatus = document.getElementById('currentLocation');
+        
+        if (locationStatus) {
+            try {
+                // Get address for the new location
+                const address = await this.getEnglishAddress(location);
+                locationStatus.textContent = address;
+            } catch (error) {
+                console.warn('⚠️ Could not get address for new location:', error.message);
+                locationStatus.textContent = `Seoul (${location.lat.toFixed(4)}, ${location.lng.toFixed(4)})`;
+            }
+        }
+    }
+
+    // Show subtle notification for location updates
+    showLocationUpdateNotification() {
+        const locationStatus = document.getElementById('currentLocation');
+        if (!locationStatus) return;
+
+        // Add visual feedback
+        locationStatus.style.transition = 'all 0.3s ease';
+        locationStatus.style.backgroundColor = '#e3f2fd';
+        locationStatus.style.borderRadius = '4px';
+        locationStatus.style.padding = '2px 6px';
+
+        // Remove visual feedback after a moment
+        setTimeout(() => {
+            locationStatus.style.backgroundColor = 'transparent';
+            locationStatus.style.padding = '0';
+        }, 2000);
+    }
+
     // Enhanced cleanup for location tracking
     stopAutoLocationTracking() {
         console.log('🛑 Stopping location tracking');
+        
+        // Stop real-time tracking
+        geolocationService.stopRealTimeTracking();
         
         if (this.locationTrackingState) {
             this.locationTrackingState.isActive = false;

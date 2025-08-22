@@ -15,6 +15,9 @@ class GeolocationService {
             hasBeenDenied: false,
             lastCheckTime: null
         };
+        this.isWatching = false;
+        this.watchOptions = null;
+        this.locationChangeThreshold = 10; // meters
         this.initializeService();
     }
 
@@ -140,7 +143,7 @@ class GeolocationService {
     }
 
     /**
-     * Watch position with automatic permission handling
+     * Watch position with automatic permission handling and real-time updates
      * @param {Function} callback - Success callback
      * @param {Function} errorCallback - Error callback  
      * @param {Object} options - Watch options
@@ -153,38 +156,65 @@ class GeolocationService {
             const defaultOptions = {
                 enableHighAccuracy: true,
                 timeout: 15000,
-                maximumAge: 60000, // 1 minute for watch
+                maximumAge: 30000, // 30 seconds for real-time updates
                 ...options
             };
 
+            // Store options for restart capability
+            this.watchOptions = defaultOptions;
+
+            // Clear existing watch
             if (this.watchId) {
                 navigator.geolocation.clearWatch(this.watchId);
             }
 
+            this.isWatching = true;
+            console.log('🔄 Starting real-time location tracking');
+
             this.watchId = navigator.geolocation.watchPosition(
                 (position) => {
-                    this.currentLocation = {
+                    const newLocation = {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude,
                         accuracy: position.coords.accuracy,
-                        timestamp: position.timestamp
+                        timestamp: position.timestamp,
+                        speed: position.coords.speed || null,
+                        heading: position.coords.heading || null
                     };
                     
-                    this.lastLocationUpdate = Date.now();
-                    this.saveCachedLocation();
-                    this.notifyCallbacks(this.currentLocation);
-                    
-                    if (callback) callback(this.currentLocation);
+                    // Check if location has changed significantly
+                    if (this.hasLocationChangedSignificantly(newLocation)) {
+                        console.log('📍 Location changed:', newLocation);
+                        
+                        this.currentLocation = newLocation;
+                        this.lastLocationUpdate = Date.now();
+                        this.saveCachedLocation();
+                        this.notifyCallbacks(newLocation);
+                        
+                        if (callback) callback(newLocation);
+                    } else {
+                        // Update timestamp but don't trigger callbacks for minor changes
+                        this.currentLocation = { ...this.currentLocation, ...newLocation };
+                    }
                 },
                 (error) => {
+                    console.error('❌ Watch position error:', error.code, error.message);
+                    
+                    // Try to restart watch on certain errors
+                    if (error.code === error.TIMEOUT && this.isWatching) {
+                        console.log('⏰ Watch timeout, restarting...');
+                        setTimeout(() => this.restartWatch(callback, errorCallback), 2000);
+                        return;
+                    }
+                    
                     const errorMessage = this.getLocationErrorMessage(error);
-                    console.error('❌ Watch position error:', error.code, errorMessage);
                     if (errorCallback) errorCallback(new Error(errorMessage));
                 },
                 defaultOptions
             );
 
         } catch (error) {
+            this.isWatching = false;
             if (errorCallback) errorCallback(error);
         }
     }
@@ -197,6 +227,9 @@ class GeolocationService {
             navigator.geolocation.clearWatch(this.watchId);
             this.watchId = null;
         }
+        this.isWatching = false;
+        this.watchOptions = null;
+        console.log('🛑 Stopped real-time location tracking');
     }
 
     /**
@@ -566,6 +599,324 @@ class GeolocationService {
 
         // Fallback: show prompt if not explicitly denied recently
         return !this.permissionState.hasBeenDenied || !this.shouldSkipPermissionRequest();
+    }
+
+    /**
+     * Check if location has changed significantly to warrant an update
+     * @param {Object} newLocation - New location coordinates
+     * @returns {boolean}
+     */
+    hasLocationChangedSignificantly(newLocation) {
+        if (!this.currentLocation) return true;
+
+        const distance = this.calculateDistance(
+            this.currentLocation.lat,
+            this.currentLocation.lng,
+            newLocation.lat,
+            newLocation.lng
+        );
+
+        // Convert km to meters
+        const distanceInMeters = distance * 1000;
+        
+        // Also consider accuracy changes
+        const accuracyChanged = Math.abs(
+            (this.currentLocation.accuracy || 100) - (newLocation.accuracy || 100)
+        ) > 20;
+
+        const significantChange = distanceInMeters > this.locationChangeThreshold || accuracyChanged;
+        
+        if (significantChange) {
+            console.log(`🎯 Location change: ${distanceInMeters.toFixed(1)}m (threshold: ${this.locationChangeThreshold}m)`);
+        }
+        
+        return significantChange;
+    }
+
+    /**
+     * Calculate distance between two coordinates in kilometers
+     * @param {number} lat1 - First latitude
+     * @param {number} lng1 - First longitude
+     * @param {number} lat2 - Second latitude
+     * @param {number} lng2 - Second longitude
+     * @returns {number} Distance in kilometers
+     */
+    calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371; // Earth's radius in kilometers
+        const dLat = this.deg2rad(lat2 - lat1);
+        const dLng = this.deg2rad(lng2 - lng1);
+        
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * 
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+        
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    /**
+     * Convert degrees to radians
+     * @param {number} deg - Degrees
+     * @returns {number} Radians
+     */
+    deg2rad(deg) {
+        return deg * (Math.PI/180);
+    }
+
+    /**
+     * Restart watch position after error or timeout
+     * @param {Function} callback - Success callback
+     * @param {Function} errorCallback - Error callback
+     */
+    async restartWatch(callback, errorCallback) {
+        if (!this.isWatching || !this.watchOptions) return;
+        
+        try {
+            console.log('🔄 Restarting location watch...');
+            await this.watchPosition(callback, errorCallback, this.watchOptions);
+        } catch (error) {
+            console.error('❌ Failed to restart location watch:', error.message);
+            if (errorCallback) errorCallback(error);
+        }
+    }
+
+    /**
+     * Start real-time location tracking with battery optimization
+     * @param {Object} options - Tracking options
+     * @returns {Promise<void>}
+     */
+    async startRealTimeTracking(options = {}) {
+        const trackingOptions = {
+            enableHighAccuracy: this.shouldUseHighAccuracy(),
+            timeout: this.getOptimalTimeout(),
+            maximumAge: this.getOptimalMaxAge(),
+            threshold: 10, // meters
+            ...options
+        };
+
+        // Set threshold
+        this.locationChangeThreshold = trackingOptions.threshold;
+
+        try {
+            await this.watchPosition(
+                (location) => {
+                    // Location updates are handled by callbacks
+                    console.log('📍 Real-time location update:', location);
+                    
+                    // Adapt tracking based on movement patterns
+                    this.adaptTrackingSettings(location);
+                },
+                (error) => {
+                    console.error('❌ Real-time tracking error:', error.message);
+                    
+                    // Try adaptive recovery
+                    this.handleTrackingError(error);
+                },
+                trackingOptions
+            );
+
+            console.log('✅ Real-time location tracking started with battery optimization');
+            return true;
+
+        } catch (error) {
+            console.error('❌ Failed to start real-time tracking:', error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Stop real-time location tracking
+     */
+    stopRealTimeTracking() {
+        this.clearWatch();
+        console.log('🛑 Real-time location tracking stopped');
+    }
+
+    /**
+     * Check if real-time tracking is active
+     * @returns {boolean}
+     */
+    isRealTimeTrackingActive() {
+        return this.isWatching && this.watchId !== null;
+    }
+
+    /**
+     * Set location change threshold for real-time tracking
+     * @param {number} meters - Threshold in meters
+     */
+    setLocationChangeThreshold(meters) {
+        this.locationChangeThreshold = meters;
+        console.log(`🎯 Location change threshold set to ${meters}m`);
+    }
+
+    /**
+     * Get current tracking status
+     * @returns {Object}
+     */
+    getTrackingStatus() {
+        return {
+            isTracking: this.isRealTimeTrackingActive(),
+            threshold: this.locationChangeThreshold,
+            lastUpdate: this.lastLocationUpdate,
+            currentLocation: this.currentLocation,
+            permissionState: this.getPermissionState()
+        };
+    }
+
+    // Battery optimization methods
+
+    /**
+     * Determine if high accuracy should be used based on device and context
+     * @returns {boolean}
+     */
+    shouldUseHighAccuracy() {
+        // Check battery status if available
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(battery => {
+                if (battery.level < 0.2) { // Less than 20% battery
+                    return false;
+                }
+            });
+        }
+
+        // Check if device is moving fast (might be in vehicle)
+        if (this.currentLocation && this.currentLocation.speed > 10) { // 10 m/s = ~36 km/h
+            return false; // Use lower accuracy for battery saving
+        }
+
+        return true; // Default to high accuracy
+    }
+
+    /**
+     * Get optimal timeout based on current conditions
+     * @returns {number}
+     */
+    getOptimalTimeout() {
+        // Longer timeout if stationary, shorter if moving
+        if (this.currentLocation && this.currentLocation.speed < 1) {
+            return 20000; // 20 seconds for stationary
+        }
+        return 10000; // 10 seconds for moving
+    }
+
+    /**
+     * Get optimal maximum age based on movement patterns
+     * @returns {number}
+     */
+    getOptimalMaxAge() {
+        // Shorter cache time if moving fast
+        if (this.currentLocation && this.currentLocation.speed > 5) {
+            return 15000; // 15 seconds
+        }
+        return 45000; // 45 seconds for slower movement
+    }
+
+    /**
+     * Adapt tracking settings based on movement patterns
+     * @param {Object} location - Current location
+     */
+    adaptTrackingSettings(location) {
+        if (!this.watchOptions) return;
+
+        const speed = location.speed || 0;
+        let newThreshold = this.locationChangeThreshold;
+
+        // Adjust threshold based on speed
+        if (speed > 15) { // Fast movement (>54 km/h)
+            newThreshold = 50; // 50 meters
+        } else if (speed > 5) { // Moderate movement (>18 km/h)
+            newThreshold = 20; // 20 meters
+        } else if (speed < 1) { // Stationary
+            newThreshold = 5; // 5 meters (more sensitive)
+        } else {
+            newThreshold = 10; // Default 10 meters
+        }
+
+        // Update threshold if changed significantly
+        if (Math.abs(newThreshold - this.locationChangeThreshold) > 5) {
+            this.setLocationChangeThreshold(newThreshold);
+            console.log(`🎯 Adapted threshold to ${newThreshold}m based on speed: ${speed.toFixed(1)}m/s`);
+        }
+    }
+
+    /**
+     * Handle tracking errors with adaptive strategies
+     * @param {Error} error - The error that occurred
+     */
+    handleTrackingError(error) {
+        switch (error.code) {
+            case error.TIMEOUT:
+                // Increase timeout for next attempt
+                if (this.watchOptions) {
+                    this.watchOptions.timeout = Math.min(this.watchOptions.timeout * 1.5, 30000);
+                    console.log(`⏰ Increased timeout to ${this.watchOptions.timeout}ms`);
+                }
+                break;
+
+            case error.POSITION_UNAVAILABLE:
+                // Switch to lower accuracy mode
+                if (this.watchOptions) {
+                    this.watchOptions.enableHighAccuracy = false;
+                    console.log('📡 Switched to low accuracy mode');
+                }
+                break;
+
+            case error.PERMISSION_DENIED:
+                // Stop tracking if permission denied
+                this.stopRealTimeTracking();
+                break;
+        }
+    }
+
+    /**
+     * Check if user appears to be stationary
+     * @returns {boolean}
+     */
+    isUserStationary() {
+        if (!this.currentLocation || !this.lastLocationUpdate) return false;
+        
+        const timeSinceUpdate = Date.now() - this.lastLocationUpdate;
+        const speed = this.currentLocation.speed || 0;
+        
+        // Consider stationary if low speed and recent update
+        return speed < 1 && timeSinceUpdate < 300000; // 5 minutes
+    }
+
+    /**
+     * Optimize tracking for battery life
+     */
+    optimizeForBattery() {
+        if (!this.isWatching) return;
+
+        console.log('🔋 Optimizing location tracking for battery life');
+        
+        // Reduce accuracy and increase thresholds
+        this.setLocationChangeThreshold(20); // Less sensitive
+        
+        if (this.watchOptions) {
+            this.watchOptions.enableHighAccuracy = false;
+            this.watchOptions.maximumAge = 60000; // 1 minute cache
+            this.watchOptions.timeout = 20000; // 20 second timeout
+        }
+    }
+
+    /**
+     * Optimize tracking for accuracy
+     */
+    optimizeForAccuracy() {
+        if (!this.isWatching) return;
+
+        console.log('🎯 Optimizing location tracking for accuracy');
+        
+        // Increase accuracy and reduce thresholds
+        this.setLocationChangeThreshold(5); // More sensitive
+        
+        if (this.watchOptions) {
+            this.watchOptions.enableHighAccuracy = true;
+            this.watchOptions.maximumAge = 15000; // 15 second cache
+            this.watchOptions.timeout = 10000; // 10 second timeout
+        }
     }
 }
 
