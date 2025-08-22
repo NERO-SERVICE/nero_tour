@@ -1,5 +1,6 @@
 // Seoul Explorer - Mobile Tourism App for American Visitors
 import { dataService, imageService, initializeServices } from '../services/index.js';
+import geolocationService from '../services/geolocation-service.js';
 
 class SeoulExplorer {
     constructor() {
@@ -72,46 +73,71 @@ class SeoulExplorer {
         }
     }
 
-    // Geolocation API Integration - One time on page load
-    getCurrentLocation() {
+    // Geolocation API Integration using smart permission architecture
+    async getCurrentLocation() {
         const locationStatus = document.getElementById('currentLocation');
 
-        if (!navigator.geolocation) {
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.warn('⚠️ Geolocation not supported');
-            }
+        // Check if location service is available
+        const hasSupport = await geolocationService.hasLocationSupport();
+        if (!hasSupport) {
             if (locationStatus) {
                 locationStatus.textContent = 'Seoul, South Korea';
             }
+            this.handleLocationError('Location access is not available. Please use a modern browser with HTTPS.');
             return;
         }
 
-        // Show "Getting location..." on load
-        if (locationStatus) {
-            locationStatus.textContent = 'Getting your location...';
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                this.currentLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                if (!window.CONFIG?.IS_PRODUCTION) {
-                    console.log('📍 Location obtained:', this.currentLocation);
-                }
+        try {
+            // First, try to get cached location (if permission was previously granted)
+            const cachedLocation = geolocationService.getCachedLocation();
+            if (cachedLocation && geolocationService.getPermissionState().hasBeenGranted) {
+                this.currentLocation = cachedLocation;
                 this.handleLocationSuccess();
-            },
-            (error) => {
-                console.error('❌ Location error:', error.code, error.message);
-                this.handleLocationError(error.message);
-            },
-            {
-                enableHighAccuracy: false,
-                timeout: 5000,
-                maximumAge: 0
+                return;
             }
-        );
+
+            // Check if we should show permission prompt
+            const shouldPrompt = await geolocationService.shouldShowPermissionPrompt();
+            
+            if (shouldPrompt) {
+                // Show "Getting location..." when requesting permission
+                if (locationStatus) {
+                    locationStatus.textContent = 'Getting your location...';
+                }
+
+                // Request location with smart permission handling
+                const result = await geolocationService.requestLocationWithPrompt({
+                    enableHighAccuracy: false,
+                    timeout: 10000,
+                    maximumAge: 300000
+                });
+                
+                this.currentLocation = result;
+                
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.log('📍 Location obtained:', this.currentLocation, 
+                               result.showedPrompt ? '(with prompt)' : '(cached)');
+                }
+                
+                this.handleLocationSuccess();
+            } else {
+                // Permission was denied recently or permanently blocked
+                if (locationStatus) {
+                    locationStatus.textContent = 'Seoul, South Korea';
+                }
+                
+                const permissionState = geolocationService.getPermissionState();
+                if (permissionState.hasBeenDenied) {
+                    this.handleLocationError('Location access was denied. Click "Allow Location" in your browser to get personalized recommendations.');
+                } else {
+                    this.handleLocationError('Location access is not available at this time.');
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ Location error:', error.message);
+            this.handleLocationError(error.message);
+        }
     }
 
 
@@ -179,10 +205,16 @@ class SeoulExplorer {
         if (locationInfo) {
             locationInfo.innerHTML = `
                 <div class="error-state">
-                    <h3>⚠️ Location Access Needed</h3>
-                    <p>Enable location services to find nearby attractions and get personalized recommendations.</p>
-                    <button onclick="location.reload()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
-                        Refresh Page
+                    <h3>📍 Location Access</h3>
+                    <p>${message}</p>
+                    <div style="background: #f8f9ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <strong>To enable location:</strong><br>
+                        1. Click "Request Location" below<br>
+                        2. Allow location access when prompted<br>
+                        3. Future visits won't ask again
+                    </div>
+                    <button onclick="seoulExplorer.requestLocationPermission()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
+                        Request Location
                     </button>
                 </div>
             `;
@@ -915,32 +947,28 @@ class SeoulExplorer {
         }
     }
 
-    // Enhanced geolocation with retry logic
-    getLocationWithRetry(timeoutMs = 10000) {
-        return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-                reject(new Error('Geolocation not supported'));
-                return;
-            }
-
-            const options = {
+    // Enhanced geolocation with retry logic using centralized service
+    async getLocationWithRetry(timeoutMs = 10000) {
+        try {
+            const location = await geolocationService.getCurrentLocation({
                 enableHighAccuracy: true,
                 timeout: timeoutMs,
                 maximumAge: 30000 // 30 seconds cache
+            });
+            
+            console.log('✅ Location obtained successfully');
+            return {
+                coords: {
+                    latitude: location.lat,
+                    longitude: location.lng,
+                    accuracy: location.accuracy
+                },
+                timestamp: location.timestamp || Date.now()
             };
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    console.log('✅ Location obtained successfully');
-                    resolve(position);
-                },
-                (error) => {
-                    console.warn('⚠️ Geolocation error:', error.message);
-                    reject(error);
-                },
-                options
-            );
-        });
+        } catch (error) {
+            console.warn('⚠️ Geolocation error:', error.message);
+            throw error;
+        }
     }
 
     // Process and update location with enhanced address resolution
@@ -984,34 +1012,37 @@ class SeoulExplorer {
         }, 45000); // Every 45 seconds
     }
 
-    // Setup watchPosition for real-time tracking
-    setupWatchPositionTracking() {
-        if (!navigator.geolocation) return;
-        
-        this.watchPositionId = navigator.geolocation.watchPosition(
-            (position) => {
-                const newLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                    accuracy: position.coords.accuracy,
-                    timestamp: Date.now()
-                };
-                
-                if (this.shouldUpdateLocation(newLocation)) {
-                    console.log('👁️ WatchPosition detected location change');
-                    this.processLocationUpdate(newLocation);
+    // Setup watchPosition for real-time tracking using centralized service
+    async setupWatchPositionTracking() {
+        try {
+            await geolocationService.watchPosition(
+                (location) => {
+                    const newLocation = {
+                        lat: location.lat,
+                        lng: location.lng,
+                        accuracy: location.accuracy,
+                        timestamp: location.timestamp || Date.now()
+                    };
+                    
+                    if (this.shouldUpdateLocation(newLocation)) {
+                        console.log('👁️ WatchPosition detected location change');
+                        this.processLocationUpdate(newLocation);
+                    }
+                },
+                (error) => {
+                    console.warn('⚠️ WatchPosition error:', error.message);
+                    this.locationTrackingState.trackingMethod = 'periodic_only';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 45000
                 }
-            },
-            (error) => {
-                console.warn('⚠️ WatchPosition error:', error.message);
-                this.locationTrackingState.trackingMethod = 'periodic_only';
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 15000,
-                maximumAge: 45000
-            }
-        );
+            );
+        } catch (error) {
+            console.warn('⚠️ Watch position setup failed:', error.message);
+            this.locationTrackingState.trackingMethod = 'periodic_only';
+        }
     }
 
     // Health check to ensure tracking stays active
@@ -1116,6 +1147,59 @@ class SeoulExplorer {
         return distance > 0.05; // 0.05 km = 50 meters
     }
 
+    // Request location permission manually (called by button click)
+    async requestLocationPermission() {
+        const locationStatus = document.getElementById('currentLocation');
+        const locationInfo = document.getElementById('locationInfo');
+        
+        try {
+            // Show loading state
+            if (locationStatus) {
+                locationStatus.textContent = 'Requesting permission...';
+            }
+            
+            // Clear previous error state
+            if (locationInfo) {
+                locationInfo.innerHTML = `
+                    <div style="text-align: center; color: #666;">
+                        <p>Waiting for location permission...</p>
+                    </div>
+                `;
+            }
+            
+            // Request location with prompt
+            const result = await geolocationService.requestLocationWithPrompt({
+                enableHighAccuracy: false,
+                timeout: 10000,
+                maximumAge: 300000
+            });
+            
+            this.currentLocation = result;
+            
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('📍 Location granted via button:', this.currentLocation);
+            }
+            
+            // Handle successful location
+            this.handleLocationSuccess();
+            
+        } catch (error) {
+            console.error('❌ Manual location request failed:', error.message);
+            
+            // Reset location status
+            if (locationStatus) {
+                locationStatus.textContent = 'Seoul, South Korea';
+            }
+            
+            // Show appropriate error based on error type
+            if (error.message.includes('denied')) {
+                this.handleLocationError('Location access denied. You can enable it in your browser settings and try again.');
+            } else {
+                this.handleLocationError(error.message);
+            }
+        }
+    }
+
     // Enhanced cleanup for location tracking
     stopAutoLocationTracking() {
         console.log('🛑 Stopping location tracking');
@@ -1140,10 +1224,8 @@ class SeoulExplorer {
             this.locationUpdateInterval = null;
         }
         
-        if (this.watchPositionId && navigator.geolocation) {
-            navigator.geolocation.clearWatch(this.watchPositionId);
-            this.watchPositionId = null;
-        }
+        // Clear watch using centralized service
+        geolocationService.clearWatch();
     }
 
     // 스켈레톤 UI 렌더링

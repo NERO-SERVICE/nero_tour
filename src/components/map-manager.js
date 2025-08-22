@@ -1,5 +1,6 @@
 // Seoul Map Manager - Dedicated map functionality with Custom Markers
 import { dataService, imageService } from '../services/index.js';
+import geolocationService from '../services/geolocation-service.js';
 
 class SeoulMapManager {
     constructor() {
@@ -757,16 +758,18 @@ class SeoulMapManager {
     }
     
     
-    // Get current user location (once on page load)
-    getCurrentLocation() {
+    // Get current user location using centralized service
+    async getCurrentLocation() {
         const locationText = document.getElementById('currentLocationText');
         
-        if (!navigator.geolocation) {
+        // Check if location service is available
+        const hasSupport = await geolocationService.hasLocationSupport();
+        if (!hasSupport) {
             if (locationText) {
                 locationText.textContent = 'Seoul, South Korea';
             }
             if (!window.CONFIG?.IS_PRODUCTION) {
-                console.warn('⚠️ Geolocation is not supported by this browser');
+                console.warn('⚠️ Location access is not available');
             }
             return;
         }
@@ -776,41 +779,45 @@ class SeoulMapManager {
             locationText.textContent = 'Getting location...';
         }
 
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                this.currentLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
+        try {
+            // First, try to get cached location (if permission was previously granted)
+            const cachedLocation = geolocationService.getCachedLocation();
+            if (cachedLocation && geolocationService.getPermissionState().hasBeenGranted) {
+                this.currentLocation = cachedLocation;
+                await this.handleLocationSuccess();
+                return;
+            }
+
+            // Check if we should show permission prompt
+            const shouldPrompt = await geolocationService.shouldShowPermissionPrompt();
+            
+            if (shouldPrompt) {
+                // Request location with smart permission handling
+                const result = await geolocationService.requestLocationWithPrompt({
+                    enableHighAccuracy: false,
+                    timeout: 10000,
+                    maximumAge: 300000
+                });
+                
+                this.currentLocation = result;
                 
                 if (!window.CONFIG?.IS_PRODUCTION) {
-                    console.log('✅ User location obtained:', this.currentLocation);
+                    console.log('✅ Location obtained:', this.currentLocation, 
+                               result.showedPrompt ? '(with prompt)' : '(cached)');
                 }
                 
-                // Get address from coordinates - using Google's English format
-                if (locationText && window.google && window.google.maps) {
-                    try {
-                        const address = await this.getAddressFromCoordinates(
-                            this.currentLocation.lat, 
-                            this.currentLocation.lng
-                        );
-                        locationText.textContent = address;
-                    } catch (error) {
-                        console.error('❌ Error getting address:', error);
-                        locationText.textContent = 'Seoul, South Korea';
-                    }
-                }
-                
-                // Update map if already initialized
-                if (this.map) {
-                    this.updateUserLocationOnMap();
-                }
-            },
-            (error) => {
-                console.error('❌ Location error:', error.code, error.message);
-                
+                await this.handleLocationSuccess();
+            } else {
+                // Permission was denied or not available
                 if (locationText) {
                     locationText.textContent = 'Seoul, South Korea';
+                }
+                
+                const permissionState = geolocationService.getPermissionState();
+                if (permissionState.hasBeenDenied) {
+                    console.log('📍 Using default location - permission denied');
+                } else {
+                    console.log('📍 Using default location - permission not available');
                 }
                 
                 // Use default Seoul coordinates
@@ -819,13 +826,46 @@ class SeoulMapManager {
                 if (this.map) {
                     this.updateUserLocationOnMap();
                 }
-            },
-            {
-                enableHighAccuracy: false,
-                timeout: 5000,
-                maximumAge: 0
+                return;
             }
-        );
+        } catch (error) {
+            console.error('❌ Location error:', error.message);
+            
+            if (locationText) {
+                locationText.textContent = 'Seoul, South Korea';
+            }
+            
+            // Use default Seoul coordinates
+            this.currentLocation = { lat: 37.5665, lng: 126.9780 };
+            
+            if (this.map) {
+                this.updateUserLocationOnMap();
+            }
+        }
+    }
+
+    // Handle successful location retrieval
+    async handleLocationSuccess() {
+        const locationText = document.getElementById('currentLocationText');
+        
+        // Get address from coordinates - using Google's English format
+        if (locationText && window.google && window.google.maps) {
+            try {
+                const address = await this.getAddressFromCoordinates(
+                    this.currentLocation.lat, 
+                    this.currentLocation.lng
+                );
+                locationText.textContent = address;
+            } catch (error) {
+                console.error('❌ Error getting address:', error);
+                locationText.textContent = 'Seoul, South Korea';
+            }
+        }
+        
+        // Update map if already initialized
+        if (this.map) {
+            this.updateUserLocationOnMap();
+        }
     }
 
     // Initialize Google Maps
