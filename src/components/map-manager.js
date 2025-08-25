@@ -922,11 +922,12 @@ class SeoulMapManager {
             }
 
             console.log('🗺️ Creating Google Maps instance...');
-            // Initialize map
+            // Initialize map with greedy gesture handling for single finger control
             this.map = new google.maps.Map(mapElement, {
                 zoom: 12,
                 center: seoulCenter,
                 mapTypeId: google.maps.MapTypeId.ROADMAP,
+                gestureHandling: 'greedy', // Enable single finger pan and zoom
                 styles: [
                     {
                         "featureType": "poi",
