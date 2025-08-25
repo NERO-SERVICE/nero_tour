@@ -1,17 +1,29 @@
 // Seoul Explorer - Mobile Tourism App for American Visitors
 import { dataService, imageService, initializeServices } from '../services/index.js';
-import geolocationService from '../services/geolocation-service.js';
 
 class SeoulExplorer {
     constructor() {
-        this.currentLocation = null;
+        this.currentLocation = this.loadStoredLocation();
         this.selectedLocation = null;
-        // Favorites functionality removed for simplified UX
-        this.debugMode = false; // Enable for testing
         this.landmarks = []; // 캐시된 랜드마크 데이터
         this.googleMapsReady = false;
         
         this.init();
+    }
+    
+    // Load location from localStorage
+    loadStoredLocation() {
+        const storedLocation = localStorage.getItem('userLocation');
+        const timestamp = localStorage.getItem('locationTimestamp');
+        
+        if (storedLocation && timestamp) {
+            const age = Date.now() - parseInt(timestamp);
+            // Use stored location if it's less than 5 minutes old
+            if (age < 5 * 60 * 1000) {
+                return JSON.parse(storedLocation);
+            }
+        }
+        return null;
     }
 
     async init() {
@@ -32,15 +44,10 @@ class SeoulExplorer {
             // 랜드마크 데이터 로드
             this.landmarks = await dataService.getAllLandmarks();
             
-            // 실제 카드 렌더링 (위치 권한 없어도 모든 데이터 표시)
+            // 실제 카드 렌더링
             await this.renderLocationCards();
+            this.getCurrentLocation(); // Get location only once on load
             
-            // 위치 권한 체크는 별도로 처리 (실패해도 앱은 정상 동작)
-            this.initializeLocationServices();
-            
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log('✅ Seoul Explorer initialized successfully');
-            }
         } catch (error) {
             console.error('❌ Failed to initialize Seoul Explorer:', error);
             // fallback으로 기존 방식 사용
@@ -50,15 +57,10 @@ class SeoulExplorer {
     
     // fallback 초기화 (서비스 로드 실패 시)
     initializeFallback() {
-        if (!window.CONFIG?.IS_PRODUCTION) {
-            console.log('🔄 Using fallback initialization');
-        }
         this.landmarks = []; // 빈 배열로 초기화
         this.initializeEventListeners();
         this.renderLocationCards();
-        
-        // 위치 권한은 별도로 처리
-        this.initializeLocationServices();
+        this.getCurrentLocation(); // Get location only once on load
         this.setupCardResizeObserver();
     }
 
@@ -77,119 +79,44 @@ class SeoulExplorer {
         }
     }
 
-    // Initialize location services separately (non-blocking)
-    async initializeLocationServices() {
-        try {
-            await this.getCurrentLocation();
-        } catch (error) {
-            // Location services failed, but app continues to work
-            console.warn('⚠️ Location services unavailable:', error.message);
-            this.useDefaultLocation();
-        }
-    }
-
-    // Use default Seoul location when location services are unavailable
-    useDefaultLocation() {
-        const locationStatus = document.getElementById('currentLocation');
-        const locationInfo = document.getElementById('locationInfo');
-        
-        if (locationStatus) {
-            locationStatus.textContent = 'Seoul, South Korea';
-        }
-        
-        if (locationInfo) {
-            locationInfo.innerHTML = `
-                <div class="default-state">
-                    <h3>📍 Exploring Seoul</h3>
-                    <p>Discover amazing attractions throughout Seoul!</p>
-                    <p style="margin-top: 10px;">
-                        <button onclick="seoulExplorer.initializeLocationServices()" 
-                                style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer;">
-                            Enable Location Features
-                        </button>
-                    </p>
-                </div>
-            `;
-        }
-        
-        // Set default Seoul coordinates for distance calculations
-        this.currentLocation = { lat: 37.5665, lng: 126.9780 };
-        
-        // Update distances with default location
-        this.updateDistances();
-    }
-
-    // Geolocation API Integration using smart permission architecture
-    async getCurrentLocation() {
+    // Geolocation API Integration - One time on page load
+    getCurrentLocation() {
         const locationStatus = document.getElementById('currentLocation');
 
-        // Check if location service is available
-        const hasSupport = await geolocationService.hasLocationSupport();
-        if (!hasSupport) {
+        if (!navigator.geolocation) {
+            console.warn('⚠️ Geolocation not supported');
             if (locationStatus) {
                 locationStatus.textContent = 'Seoul, South Korea';
             }
-            this.handleLocationError('Location access is not available. Please use a modern browser with HTTPS.');
             return;
         }
 
-        try {
-            // First, try to get cached location (if permission was previously granted)
-            const cachedLocation = geolocationService.getCachedLocation();
-            if (cachedLocation && geolocationService.getPermissionState().hasBeenGranted) {
-                this.currentLocation = cachedLocation;
-                this.handleLocationSuccess();
-                
-                // Start real-time location tracking for cached location too
-                this.startRealTimeLocationTracking();
-                return;
-            }
-
-            // Check if we should show permission prompt
-            const shouldPrompt = await geolocationService.shouldShowPermissionPrompt();
-            
-            if (shouldPrompt) {
-                // Show "Getting location..." when requesting permission
-                if (locationStatus) {
-                    locationStatus.textContent = 'Getting your location...';
-                }
-
-                // Request location with smart permission handling
-                const result = await geolocationService.requestLocationWithPrompt({
-                    enableHighAccuracy: false,
-                    timeout: 10000,
-                    maximumAge: 300000
-                });
-                
-                this.currentLocation = result;
-                
-                if (!window.CONFIG?.IS_PRODUCTION) {
-                    console.log('📍 Location obtained:', this.currentLocation, 
-                               result.showedPrompt ? '(with prompt)' : '(cached)');
-                }
-                
-                this.handleLocationSuccess();
-                
-                // Start real-time location tracking after successful initial location
-                this.startRealTimeLocationTracking();
-            } else {
-                // Permission was denied recently or permanently blocked
-                if (locationStatus) {
-                    locationStatus.textContent = 'Seoul, South Korea';
-                }
-                
-                const permissionState = geolocationService.getPermissionState();
-                if (permissionState.hasBeenDenied) {
-                    this.handleLocationError('Location access was denied. Click "Allow Location" in your browser to get personalized recommendations.');
-                } else {
-                    this.handleLocationError('Location access is not available at this time.');
-                }
-            }
-            
-        } catch (error) {
-            console.error('❌ Location error:', error.message);
-            this.handleLocationError(error.message);
+        // Show "Getting location..." on load
+        if (locationStatus) {
+            locationStatus.textContent = 'Getting your location...';
         }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                this.currentLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                // Store location in localStorage for other pages
+                localStorage.setItem('userLocation', JSON.stringify(this.currentLocation));
+                localStorage.setItem('locationTimestamp', Date.now().toString());
+                this.handleLocationSuccess();
+            },
+            (error) => {
+                console.error('❌ Location error:', error.code, error.message);
+                this.handleLocationError(error.message);
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 5000,
+                maximumAge: 0
+            }
+        );
     }
 
 
@@ -257,16 +184,10 @@ class SeoulExplorer {
         if (locationInfo) {
             locationInfo.innerHTML = `
                 <div class="error-state">
-                    <h3>📍 Location Access</h3>
-                    <p>${message}</p>
-                    <div style="background: #f8f9ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                        <strong>To enable location:</strong><br>
-                        1. Click "Request Location" below<br>
-                        2. Allow location access when prompted<br>
-                        3. Future visits won't ask again
-                    </div>
-                    <button onclick="seoulExplorer.forceLocationRequest()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
-                        Request Location
+                    <h3>⚠️ Location Access Needed</h3>
+                    <p>Enable location services to find nearby attractions and get personalized recommendations.</p>
+                    <button onclick="location.reload()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
+                        Refresh Page
                     </button>
                 </div>
             `;
@@ -278,9 +199,7 @@ class SeoulExplorer {
         try {
             // Check if Google Maps API key is available
             if (!window.CONFIG || !CONFIG.GOOGLE_MAPS_API_KEY || CONFIG.GOOGLE_MAPS_API_KEY === 'your-api-key-here') {
-                if (!window.CONFIG?.IS_PRODUCTION) {
-                    console.warn('Google Maps API key not configured, using default location');
-                }
+                console.warn('Google Maps API key not configured, using default location');
                 return 'Seoul, South Korea';
             }
 
@@ -317,9 +236,6 @@ class SeoulExplorer {
             
             throw new Error('No geocoding results found');
         } catch (error) {
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.warn('Reverse geocoding failed:', error);
-            }
             return 'Seoul, South Korea';
         }
     }
@@ -366,11 +282,6 @@ class SeoulExplorer {
     }
 
     async updateDistances() {
-        // Skip distance updates if no current location available
-        if (!this.currentLocation) {
-            return;
-        }
-        
         const locationCards = document.querySelectorAll('.location-card');
         
         try {
@@ -442,10 +353,6 @@ class SeoulExplorer {
             // Setup observers for new cards
             setTimeout(() => {
                 this.observeLocationCards();
-                // Run tests in debug mode
-                if (this.debugMode) {
-                    setTimeout(() => this.testTagScenarios(), 500);
-                }
             }, 100);
             
         } catch (error) {
@@ -490,12 +397,6 @@ class SeoulExplorer {
         const finalHeight = this.clampImageHeight(optimalImageHeight, cardWidth);
         image.style.height = `${finalHeight}px`;
         
-        // Debug logging (remove in production)
-        if (this.debugMode) {
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log(`Card adjusted - Tags: ${tags.offsetHeight}px, Image: ${finalHeight}px`);
-            }
-        }
     }
     
     // Measure the total height of info content
@@ -588,32 +489,6 @@ class SeoulExplorer {
         };
     }
     
-    // Test function to validate different tag combinations
-    testTagScenarios() {
-        if (!this.debugMode) return;
-        
-        if (!window.CONFIG?.IS_PRODUCTION) {
-            console.log('🧪 Testing Dynamic Image Heights:');
-        }
-        
-        const cards = document.querySelectorAll('.location-card');
-        cards.forEach((card, index) => {
-            const image = card.querySelector('.location-image');
-            const tags = card.querySelector('.location-tags');
-            const tagCount = tags.children.length;
-            const tagHeight = tags.offsetHeight;
-            const imageHeight = parseInt(image.style.height);
-            const locationName = card.querySelector('.location-name').textContent;
-            
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log(`Card ${index + 1} (${locationName}):`, {
-                tags: tagCount,
-                tagHeight: `${tagHeight}px`,
-                imageHeight: `${imageHeight}px`,
-                tagLines: Math.ceil(tagHeight / 28)
-            });
-        });
-    }
     
     // Cleanup method for observers
     cleanup() {
@@ -635,29 +510,17 @@ class SeoulExplorer {
 
     // Initialize event listeners
     initializeEventListeners() {
-        if (!window.CONFIG?.IS_PRODUCTION) {
-            console.log('🎯 Initializing event listeners...');
-        }
 
         // Start automatic location tracking (no manual refresh needed)
         this.startAutoLocationTracking();
 
         // Bottom navigation with enhanced debugging
         const navItems = document.querySelectorAll('.nav-item');
-        if (!window.CONFIG?.IS_PRODUCTION) {
-            console.log(`📱 Found ${navItems.length} navigation items`);
-        }
         
         navItems.forEach((item, index) => {
             const section = item.dataset.section;
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log(`📍 Nav item ${index}: section="${section}"`);
-            }
             
             item.addEventListener('click', (e) => {
-                if (!window.CONFIG?.IS_PRODUCTION) {
-                    console.log('🔘 Navigation item clicked:', section);
-                }
                 
                 try {
                     // Update active state
@@ -666,9 +529,6 @@ class SeoulExplorer {
                     
                     // Get section from clicked element
                     const clickedSection = e.target.closest('.nav-item').dataset.section;
-                    if (!window.CONFIG?.IS_PRODUCTION) {
-                        console.log('🎯 Navigating to section:', clickedSection);
-                    }
                     
                     // Handle navigation with error handling
                     this.handleNavigation(clickedSection);
@@ -678,9 +538,6 @@ class SeoulExplorer {
                     
                     // Force map page navigation if it was a map click
                     if (section === 'map' || clickedSection === 'map') {
-                        if (!window.CONFIG?.IS_PRODUCTION) {
-                            console.log('🗺️ Forcing map page navigation...');
-                        }
                         this.forceMapNavigation();
                     }
                 }
@@ -690,28 +547,15 @@ class SeoulExplorer {
         // Add additional debugging for map button specifically
         const mapButton = document.querySelector('.nav-item[data-section="map"]');
         if (mapButton) {
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log('✅ Map button found and listener attached');
-            }
             
             // Add additional click listener as backup
             mapButton.addEventListener('click', (e) => {
-                if (!window.CONFIG?.IS_PRODUCTION) {
-                    console.log('🗺️ Map button clicked (backup listener)');
-                }
                 e.preventDefault();
                 this.forceMapNavigation();
             }, { once: false, passive: false });
             
         } else {
             console.error('❌ Map button not found!');
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log('🔍 Available nav items:', 
-                Array.from(navItems).map(item => ({
-                    section: item.dataset.section,
-                    text: item.textContent.trim()
-                }))
-            );
         }
     }
 
@@ -736,9 +580,6 @@ class SeoulExplorer {
     }
 
     handleNavigation(section) {
-        if (!window.CONFIG?.IS_PRODUCTION) {
-            console.log('🎯 handleNavigation called with section:', section);
-        }
         
         try {
             switch(section) {
@@ -761,9 +602,6 @@ class SeoulExplorer {
     // showFavorites functionality removed for simplified UX
 
     openMapPage() {
-        if (!window.CONFIG?.IS_PRODUCTION) {
-            console.log('🗺️ Opening map page...');
-        }
         
         try {
             // Show loading state immediately
@@ -1004,28 +842,32 @@ class SeoulExplorer {
         }
     }
 
-    // Enhanced geolocation with retry logic using centralized service
-    async getLocationWithRetry(timeoutMs = 10000) {
-        try {
-            const location = await geolocationService.getCurrentLocation({
+    // Enhanced geolocation with retry logic
+    getLocationWithRetry(timeoutMs = 10000) {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error('Geolocation not supported'));
+                return;
+            }
+
+            const options = {
                 enableHighAccuracy: true,
                 timeout: timeoutMs,
                 maximumAge: 30000 // 30 seconds cache
-            });
-            
-            console.log('✅ Location obtained successfully');
-            return {
-                coords: {
-                    latitude: location.lat,
-                    longitude: location.lng,
-                    accuracy: location.accuracy
-                },
-                timestamp: location.timestamp || Date.now()
             };
-        } catch (error) {
-            console.warn('⚠️ Geolocation error:', error.message);
-            throw error;
-        }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    console.log('✅ Location obtained successfully');
+                    resolve(position);
+                },
+                (error) => {
+                    console.warn('⚠️ Geolocation error:', error.message);
+                    reject(error);
+                },
+                options
+            );
+        });
     }
 
     // Process and update location with enhanced address resolution
@@ -1069,37 +911,34 @@ class SeoulExplorer {
         }, 45000); // Every 45 seconds
     }
 
-    // Setup watchPosition for real-time tracking using centralized service
-    async setupWatchPositionTracking() {
-        try {
-            await geolocationService.watchPosition(
-                (location) => {
-                    const newLocation = {
-                        lat: location.lat,
-                        lng: location.lng,
-                        accuracy: location.accuracy,
-                        timestamp: location.timestamp || Date.now()
-                    };
-                    
-                    if (this.shouldUpdateLocation(newLocation)) {
-                        console.log('👁️ WatchPosition detected location change');
-                        this.processLocationUpdate(newLocation);
-                    }
-                },
-                (error) => {
-                    console.warn('⚠️ WatchPosition error:', error.message);
-                    this.locationTrackingState.trackingMethod = 'periodic_only';
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 15000,
-                    maximumAge: 45000
+    // Setup watchPosition for real-time tracking
+    setupWatchPositionTracking() {
+        if (!navigator.geolocation) return;
+        
+        this.watchPositionId = navigator.geolocation.watchPosition(
+            (position) => {
+                const newLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
+                    timestamp: Date.now()
+                };
+                
+                if (this.shouldUpdateLocation(newLocation)) {
+                    console.log('👁️ WatchPosition detected location change');
+                    this.processLocationUpdate(newLocation);
                 }
-            );
-        } catch (error) {
-            console.warn('⚠️ Watch position setup failed:', error.message);
-            this.locationTrackingState.trackingMethod = 'periodic_only';
-        }
+            },
+            (error) => {
+                console.warn('⚠️ WatchPosition error:', error.message);
+                this.locationTrackingState.trackingMethod = 'periodic_only';
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 45000
+            }
+        );
     }
 
     // Health check to ensure tracking stays active
@@ -1204,224 +1043,9 @@ class SeoulExplorer {
         return distance > 0.05; // 0.05 km = 50 meters
     }
 
-    // Request location permission manually (called by button click)
-    async requestLocationPermission() {
-        const locationStatus = document.getElementById('currentLocation');
-        const locationInfo = document.getElementById('locationInfo');
-        
-        try {
-            // Show loading state
-            if (locationStatus) {
-                locationStatus.textContent = 'Requesting permission...';
-            }
-            
-            // Clear previous error state
-            if (locationInfo) {
-                locationInfo.innerHTML = `
-                    <div style="text-align: center; color: #666;">
-                        <p>Waiting for location permission...</p>
-                    </div>
-                `;
-            }
-            
-            // Request location with prompt
-            const result = await geolocationService.requestLocationWithPrompt({
-                enableHighAccuracy: false,
-                timeout: 10000,
-                maximumAge: 300000
-            });
-            
-            this.currentLocation = result;
-            
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log('📍 Location granted via button:', this.currentLocation);
-            }
-            
-            // Handle successful location
-            this.handleLocationSuccess();
-            
-            // Start real-time location tracking for manual request too
-            this.startRealTimeLocationTracking();
-            
-        } catch (error) {
-            console.error('❌ Manual location request failed:', error.message);
-            
-            // Reset location status
-            if (locationStatus) {
-                locationStatus.textContent = 'Seoul, South Korea';
-            }
-            
-            // Show appropriate error based on error type
-            if (error.message.includes('denied')) {
-                this.handleLocationError('Location access denied. You can enable it in your browser settings and try again.');
-            } else {
-                this.handleLocationError(error.message);
-            }
-        }
-    }
-
-    // Force location request (for refresh button and retry scenarios)
-    async forceLocationRequest() {
-        try {
-            console.log('🔄 Forcing new location request...');
-            
-            // Reset permission state to allow new prompts
-            geolocationService.clearPermissionState();
-            
-            // Clear any cached location data
-            sessionStorage.removeItem('nero_user_location');
-            
-            // Show loading state
-            const locationStatus = document.getElementById('currentLocation');
-            const locationInfo = document.getElementById('locationInfo');
-            
-            if (locationStatus) {
-                locationStatus.textContent = 'Requesting permission...';
-            }
-            
-            if (locationInfo) {
-                locationInfo.innerHTML = `
-                    <div style="text-align: center; color: #666; padding: 20px;">
-                        <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #667eea; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
-                        <p>Requesting location permission...</p>
-                    </div>
-                    <style>
-                        @keyframes spin {
-                            to { transform: rotate(360deg); }
-                        }
-                    </style>
-                `;
-            }
-            
-            // Force a fresh permission request
-            const result = await geolocationService.requestLocationWithPrompt({
-                enableHighAccuracy: false,
-                timeout: 15000,
-                maximumAge: 0 // Force fresh request
-            });
-            
-            this.currentLocation = result;
-            
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log('📍 Location granted via force request:', this.currentLocation);
-            }
-            
-            // Handle successful location
-            this.handleLocationSuccess();
-            
-            // Start real-time tracking
-            this.startRealTimeLocationTracking();
-            
-        } catch (error) {
-            console.error('❌ Force location request failed:', error.message);
-            
-            // Show user-friendly error message
-            this.handleLocationError(
-                error.message.includes('denied') 
-                    ? 'Location access was denied. Please check your browser settings and try again.'
-                    : 'Unable to get location. Please check your device settings.'
-            );
-        }
-    }
-
-    // Start real-time location tracking
-    async startRealTimeLocationTracking() {
-        try {
-            // Register callback for location updates
-            geolocationService.addLocationCallback((location) => {
-                this.handleRealTimeLocationUpdate(location);
-            });
-
-            // Start real-time tracking with optimized settings
-            await geolocationService.startRealTimeTracking({
-                enableHighAccuracy: true,
-                timeout: 15000,
-                maximumAge: 30000,
-                threshold: 10 // 10 meters minimum change
-            });
-
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log('✅ Real-time location tracking started');
-            }
-
-        } catch (error) {
-            console.error('❌ Failed to start real-time tracking:', error.message);
-        }
-    }
-
-    // Handle real-time location updates
-    handleRealTimeLocationUpdate(location) {
-        const previousLocation = this.currentLocation;
-        this.currentLocation = location;
-
-        if (!window.CONFIG?.IS_PRODUCTION) {
-            console.log('📍 Real-time location update:', location);
-        }
-
-        // Update UI elements
-        this.updateLocationDisplay(location);
-        
-        // Update distances to landmarks
-        this.updateDistances();
-        
-        // Update any map elements if present
-        if (window.seoulMapManager && typeof window.seoulMapManager.updateUserLocationOnMap === 'function') {
-            window.seoulMapManager.updateUserLocationOnMap();
-        }
-
-        // Show subtle notification for significant changes
-        if (previousLocation) {
-            const distance = this.calculateDistance(
-                previousLocation.lat, previousLocation.lng,
-                location.lat, location.lng
-            );
-            
-            if (distance > 0.1) { // More than 100 meters
-                this.showLocationUpdateNotification();
-            }
-        }
-    }
-
-    // Update location display in UI
-    async updateLocationDisplay(location) {
-        const locationStatus = document.getElementById('currentLocation');
-        
-        if (locationStatus) {
-            try {
-                // Get address for the new location
-                const address = await this.getEnglishAddress(location);
-                locationStatus.textContent = address;
-            } catch (error) {
-                console.warn('⚠️ Could not get address for new location:', error.message);
-                locationStatus.textContent = `Seoul (${location.lat.toFixed(4)}, ${location.lng.toFixed(4)})`;
-            }
-        }
-    }
-
-    // Show subtle notification for location updates
-    showLocationUpdateNotification() {
-        const locationStatus = document.getElementById('currentLocation');
-        if (!locationStatus) return;
-
-        // Add visual feedback
-        locationStatus.style.transition = 'all 0.3s ease';
-        locationStatus.style.backgroundColor = '#e3f2fd';
-        locationStatus.style.borderRadius = '4px';
-        locationStatus.style.padding = '2px 6px';
-
-        // Remove visual feedback after a moment
-        setTimeout(() => {
-            locationStatus.style.backgroundColor = 'transparent';
-            locationStatus.style.padding = '0';
-        }, 2000);
-    }
-
     // Enhanced cleanup for location tracking
     stopAutoLocationTracking() {
         console.log('🛑 Stopping location tracking');
-        
-        // Stop real-time tracking
-        geolocationService.stopRealTimeTracking();
         
         if (this.locationTrackingState) {
             this.locationTrackingState.isActive = false;
@@ -1443,8 +1067,10 @@ class SeoulExplorer {
             this.locationUpdateInterval = null;
         }
         
-        // Clear watch using centralized service
-        geolocationService.clearWatch();
+        if (this.watchPositionId && navigator.geolocation) {
+            navigator.geolocation.clearWatch(this.watchPositionId);
+            this.watchPositionId = null;
+        }
     }
 
     // 스켈레톤 UI 렌더링

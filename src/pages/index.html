@@ -6,9 +6,8 @@
     <title>Seoul Explorer - Discover Korea</title>
     
     <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://www.gstatic.com https://www.google.com https://cdnjs.cloudflare.com https://apis.google.com https://www.googletagmanager.com https://maps.gstatic.com https://firebase.googleapis.com https://*.firebaseapp.com; connect-src 'self' https://maps.googleapis.com https://www.googleapis.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.google-analytics.com https://maps.gstatic.com https://*.firebaseio.com https://*.cloudfunctions.net https://firebaseremoteconfig.googleapis.com https://firebasestorage.googleapis.com https://firestore.googleapis.com https://*.firebaseapp.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://www.google.com; img-src 'self' data: https: blob: https://maps.googleapis.com https://maps.gstatic.com https://*.googleapis.com https://firebasestorage.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; object-src 'none'; media-src 'self' data: blob: https://firebasestorage.googleapis.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://www.gstatic.com https://www.google.com https://cdnjs.cloudflare.com https://apis.google.com https://www.googletagmanager.com https://maps.gstatic.com https://firebase.googleapis.com https://*.firebaseapp.com; connect-src 'self' ws://127.0.0.1:5500 https://maps.googleapis.com https://www.googleapis.com https://firebase.googleapis.com https://firebaseinstallations.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.google-analytics.com https://maps.gstatic.com https://*.firebaseio.com https://*.cloudfunctions.net https://firebaseremoteconfig.googleapis.com https://firebasestorage.googleapis.com https://firestore.googleapis.com https://*.firebaseapp.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://www.google.com; img-src 'self' data: https: blob: https://maps.googleapis.com https://maps.gstatic.com https://*.googleapis.com https://firebasestorage.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; object-src 'none'; media-src 'self' data: blob: https://firebasestorage.googleapis.com;">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="stylesheet" href="../styles/main.css">
@@ -107,7 +106,6 @@
     <!-- Scripts - ES6 Modules -->
     <script type="module" src="../components/explorer.js"></script>
     <script type="module" src="../services/maps-manager.js"></script>
-    <script type="module" src="../utils/enhanced-app.js"></script>
     
     <!-- Google Maps API -->
     <script>
@@ -130,75 +128,8 @@
             }
         }
         
-        // Direct map navigation function (backup method)
-        window.openMapPageDirect = function() {
-            console.log('🗺️ Direct map navigation triggered');
-            
-            try {
-                // Show immediate visual feedback
-                const mapButton = document.querySelector('.nav-item[data-section="map"]');
-                if (mapButton) {
-                    mapButton.style.opacity = '0.7';
-                    mapButton.innerHTML = `
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <span>Loading...</span>
-                    `;
-                }
 
-                // Multiple navigation attempts
-                const attempts = [
-                    () => window.location.href = 'map.html',
-                    () => window.location.assign('map.html'),
-                    () => window.location.replace('map.html'),
-                    () => window.location.href = './map.html',
-                    () => window.location.href = '/src/pages/map.html'
-                ];
 
-                attempts.forEach((attempt, index) => {
-                    setTimeout(() => {
-                        try {
-                            console.log(`🔄 Navigation attempt ${index + 1}`);
-                            attempt();
-                        } catch (error) {
-                            console.warn(`⚠️ Attempt ${index + 1} failed:`, error);
-                        }
-                    }, index * 50);
-                });
-
-            } catch (error) {
-                console.error('❌ Direct navigation failed:', error);
-                alert('Could not open map. Please refresh the page and try again.');
-            }
-        };
-
-        // Add click event listener to map button as backup
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📱 Adding backup map button listener...');
-            
-            const mapButton = document.querySelector('.nav-item[data-section="map"]');
-            if (mapButton) {
-                // Remove any existing onclick to avoid double execution
-                mapButton.removeAttribute('onclick');
-                
-                // Add new click handler
-                mapButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('🗺️ Map button clicked (backup handler)');
-                    
-                    openMapPageDirect();
-                }, { passive: false });
-                
-                console.log('✅ Backup map button listener added');
-            } else {
-                console.error('❌ Map button not found for backup listener');
-            }
-        });
-
-        // Main page initialization - Map functionality moved to separate page
-        console.log('🚀 Seoul Explorer main page loaded');
-        console.log('📍 Environment:', window.BUILD_INFO?.environment || 'unknown');
-        console.log('📁 Config source:', window.BUILD_INFO?.source || 'unknown');
     </script>
 </body>
 </html>

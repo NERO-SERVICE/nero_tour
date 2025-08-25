@@ -1,13 +1,39 @@
 // Seoul Map Manager - Dedicated map functionality with Custom Markers
-import { dataService, imageService } from '../services/index.js';
-import geolocationService from '../services/geolocation-service.js';
+console.log('🚀 map-manager.js loading...');
+
+// Use dynamic import to handle potential loading issues
+let dataService = null;
+let imageService = null;
+
+async function loadServices() {
+    try {
+        const services = await import('../services/index.js');
+        dataService = services.dataService;
+        imageService = services.imageService;
+        console.log('✅ Services imported successfully');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to import services:', error);
+        // Fallback to simpler data service
+        dataService = window.simpleDataService || {
+            waitForReady: async () => true,
+            getAllLandmarks: async () => [],
+            getLandmarkById: async () => null
+        };
+        imageService = {
+            getLandmarkImage: (image) => image
+        };
+        return false;
+    }
+}
 
 class SeoulMapManager {
     constructor() {
+        console.log('🏗️ SeoulMapManager constructor called');
         this.map = null;
         this.userLocationMarker = null;
         this.attractionMarkers = [];
-        this.currentLocation = null;
+        this.currentLocation = this.loadStoredLocation(); // Load stored location
         this.trafficLayer = null;
         this.isTrafficVisible = false;
         this.isFullscreen = false;
@@ -15,7 +41,23 @@ class SeoulMapManager {
         this.placesService = null; // Google Places 서비스
         this.searchMarkers = []; // 검색 결과 마커들
         
+        console.log('🔧 Calling init()...');
         this.init();
+    }
+    
+    // Load location from localStorage
+    loadStoredLocation() {
+        const storedLocation = localStorage.getItem('userLocation');
+        const timestamp = localStorage.getItem('locationTimestamp');
+        
+        if (storedLocation && timestamp) {
+            const age = Date.now() - parseInt(timestamp);
+            // Use stored location if it's less than 5 minutes old
+            if (age < 5 * 60 * 1000) {
+                return JSON.parse(storedLocation);
+            }
+        }
+        return null;
     }
 
     async init() {
@@ -23,36 +65,50 @@ class SeoulMapManager {
             console.log('🗺️ Initializing Seoul Map Manager...');
         }
         
-        try {
-            // 서비스 초기화 및 랜드마크 데이터 로드
-            this.landmarks = await dataService.getAllLandmarks();
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log('✅ Landmarks data loaded for map');
-            }
-        } catch (error) {
-            console.error('❌ Failed to load landmarks data:', error);
-            // Firebase에서 데이터를 불러올 수 없는 경우 빈 배열 사용
-            this.landmarks = [];
-        }
+        // Load services first
+        await loadServices();
         
-        // Get user location once on load
-        this.getCurrentLocation();
-        
+        // Don't load data here - wait for map initialization
         // Setup control event listeners
         this.setupControlListeners();
         
         // Setup search functionality
         this.setupSearchListeners();
+        
+        // Get user location once on load
+        this.getCurrentLocation();
+    }
+    
+    async loadLandmarksData() {
+        try {
+            // Wait for dataService to be ready
+            await dataService.waitForReady();
+            
+            // 서비스 초기화 및 랜드마크 데이터 로드
+            this.landmarks = await dataService.getAllLandmarks();
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log('✅ Landmarks data loaded for map:', this.landmarks.length, 'landmarks');
+            }
+            return this.landmarks;
+        } catch (error) {
+            console.error('❌ Failed to load landmarks data:', error);
+            // Firebase에서 데이터를 불러올 수 없는 경우 빈 배열 사용
+            this.landmarks = [];
+            return [];
+        }
     }
 
     // 서비스에서 랜드마크 데이터를 가져오는 새로운 메서드
     async getSeoulLandmarks() {
         try {
-            if (this.landmarks.length > 0) {
-                return this.landmarks;
+            // Always get fresh data if landmarks is empty
+            if (this.landmarks.length === 0) {
+                console.log('📍 Loading landmarks from dataService...');
+                await dataService.waitForReady();
+                this.landmarks = await dataService.getAllLandmarks();
+                console.log(`✅ Loaded ${this.landmarks.length} landmarks`);
             }
             
-            this.landmarks = await dataService.getAllLandmarks();
             return this.landmarks;
         } catch (error) {
             console.error('❌ Error loading landmarks from service:', error);
@@ -654,12 +710,18 @@ class SeoulMapManager {
 
     // Add markers for Seoul attractions with custom icons
     async addAttractionMarkers() {
-        if (!this.map) return;
+        if (!this.map) {
+            console.error('❌ Map not initialized yet');
+            return;
+        }
 
         try {
+            console.log('🗺️ Adding attraction markers...');
             const landmarks = await this.getSeoulLandmarks();
+            console.log(`📍 Adding ${landmarks.length} markers to map`);
             
-            landmarks.forEach(landmark => {
+            landmarks.forEach((landmark, index) => {
+                console.log(`Adding marker ${index + 1}:`, landmark.name);
                 // Create simple icon-based marker
                 const markerIcon = this.createCustomMarkerIcon(landmark);
                 
@@ -758,18 +820,16 @@ class SeoulMapManager {
     }
     
     
-    // Get current user location using centralized service
-    async getCurrentLocation() {
+    // Get current user location (once on page load)
+    getCurrentLocation() {
         const locationText = document.getElementById('currentLocationText');
         
-        // Check if location service is available
-        const hasSupport = await geolocationService.hasLocationSupport();
-        if (!hasSupport) {
+        if (!navigator.geolocation) {
             if (locationText) {
                 locationText.textContent = 'Seoul, South Korea';
             }
             if (!window.CONFIG?.IS_PRODUCTION) {
-                console.warn('⚠️ Location access is not available');
+                console.warn('⚠️ Geolocation is not supported by this browser');
             }
             return;
         }
@@ -779,108 +839,91 @@ class SeoulMapManager {
             locationText.textContent = 'Getting location...';
         }
 
-        try {
-            // First, try to get cached location (if permission was previously granted)
-            const cachedLocation = geolocationService.getCachedLocation();
-            if (cachedLocation && geolocationService.getPermissionState().hasBeenGranted) {
-                this.currentLocation = cachedLocation;
-                await this.handleLocationSuccess();
-                return;
-            }
-
-            // Check if we should show permission prompt
-            const shouldPrompt = await geolocationService.shouldShowPermissionPrompt();
-            
-            if (shouldPrompt) {
-                // Request location with smart permission handling
-                const result = await geolocationService.requestLocationWithPrompt({
-                    enableHighAccuracy: false,
-                    timeout: 10000,
-                    maximumAge: 300000
-                });
-                
-                this.currentLocation = result;
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                this.currentLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
                 
                 if (!window.CONFIG?.IS_PRODUCTION) {
-                    console.log('✅ Location obtained:', this.currentLocation, 
-                               result.showedPrompt ? '(with prompt)' : '(cached)');
+                    console.log('✅ User location obtained:', this.currentLocation);
                 }
                 
-                await this.handleLocationSuccess();
-            } else {
-                // Permission was denied or not available - use default location
-                this.useDefaultLocation();
-                return;
+                // Get address from coordinates - using Google's English format
+                if (locationText && window.google && window.google.maps) {
+                    try {
+                        const address = await this.getAddressFromCoordinates(
+                            this.currentLocation.lat, 
+                            this.currentLocation.lng
+                        );
+                        locationText.textContent = address;
+                    } catch (error) {
+                        console.error('❌ Error getting address:', error);
+                        locationText.textContent = 'Seoul, South Korea';
+                    }
+                }
+                
+                // Update map if already initialized
+                if (this.map) {
+                    this.updateUserLocationOnMap();
+                }
+            },
+            (error) => {
+                console.error('❌ Location error:', error.code, error.message);
+                
+                if (locationText) {
+                    locationText.textContent = 'Seoul, South Korea';
+                }
+                
+                // Use default Seoul coordinates
+                this.currentLocation = { lat: 37.5665, lng: 126.9780 };
+                
+                if (this.map) {
+                    this.updateUserLocationOnMap();
+                }
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 5000,
+                maximumAge: 0
             }
-        } catch (error) {
-            console.error('❌ Location error:', error.message);
-            this.useDefaultLocation();
-        }
-    }
-
-    // Use default Seoul location when location services are unavailable
-    useDefaultLocation() {
-        const locationText = document.getElementById('currentLocationText');
-        
-        if (locationText) {
-            locationText.textContent = 'Seoul, South Korea';
-        }
-        
-        console.log('📍 Using default Seoul location');
-        
-        // Use default Seoul coordinates
-        this.currentLocation = { lat: 37.5665, lng: 126.9780 };
-        
-        // Update map if already initialized
-        if (this.map) {
-            this.updateUserLocationOnMap();
-        }
-    }
-
-    // Handle successful location retrieval
-    async handleLocationSuccess() {
-        const locationText = document.getElementById('currentLocationText');
-        
-        // Get address from coordinates - using Google's English format
-        if (locationText && window.google && window.google.maps) {
-            try {
-                const address = await this.getAddressFromCoordinates(
-                    this.currentLocation.lat, 
-                    this.currentLocation.lng
-                );
-                locationText.textContent = address;
-            } catch (error) {
-                console.error('❌ Error getting address:', error);
-                locationText.textContent = 'Seoul, South Korea';
-            }
-        }
-        
-        // Update map if already initialized
-        if (this.map) {
-            this.updateUserLocationOnMap();
-        }
+        );
     }
 
     // Initialize Google Maps
     async initializeMap() {
-        if (!window.CONFIG?.IS_PRODUCTION) {
-            console.log('🗺️ Initializing Google Maps...');
-        }
+        console.log('🗺️ initializeMap() called');
+        console.log('📍 Google Maps available:', typeof google !== 'undefined' && google.maps);
+        console.log('📍 Map element exists:', !!document.getElementById('map'));
         
-        const mapContainer = document.getElementById('mapContainer');
-        if (!mapContainer) {
-            console.error('❌ Map container not found');
+        const mapElement = document.getElementById('map');
+        if (!mapElement) {
+            console.error('❌ Map element not found');
             return;
         }
+        
+        console.log('✅ Map element found:', mapElement);
 
         const mapLoading = document.getElementById('mapLoading');
 
         try {
             // Default center (Seoul)
             const seoulCenter = this.currentLocation || { lat: 37.5665, lng: 126.9780 };
+            console.log('📍 Map center:', seoulCenter);
 
+            // Check if google.maps.Map is available
+            if (!google || !google.maps || !google.maps.Map) {
+                console.error('❌ Google Maps API not loaded properly');
+                console.log('google:', typeof google);
+                console.log('google.maps:', typeof google?.maps);
+                console.log('google.maps.Map:', typeof google?.maps?.Map);
+                throw new Error('Google Maps API not available');
+            }
+
+            console.log('🗺️ Creating Google Maps instance...');
             // Initialize map
-            this.map = new google.maps.Map(mapContainer, {
+            this.map = new google.maps.Map(mapElement, {
                 zoom: 12,
                 center: seoulCenter,
                 mapTypeId: google.maps.MapTypeId.ROADMAP,
@@ -909,6 +952,8 @@ class SeoulMapManager {
                 mapLoading.style.display = 'none';
             }
 
+            // Load landmarks data after map is ready
+            await this.loadLandmarksData();
 
             // Add user location marker
             this.updateUserLocationOnMap();
@@ -1113,10 +1158,11 @@ class SeoulMapManager {
 
         if (!window.CONFIG?.IS_PRODUCTION) {
             console.log('🔍 Setting up search listeners:', {
-            searchInput: !!searchInput,
-            clearButton: !!clearButton,
-            searchResults: !!searchResults
-        });
+                searchInput: !!searchInput,
+                clearButton: !!clearButton,
+                searchResults: !!searchResults
+            });
+        }
 
         if (!searchInput || !clearButton || !searchResults) {
             console.error('❌ Search elements not found');
@@ -1176,7 +1222,6 @@ class SeoulMapManager {
             }
         });
     }
-
 
     // Perform place search using Google Places API
     async performSearch(query) {
@@ -1371,13 +1416,23 @@ class SeoulMapManager {
     }
 }
 
-// Create global instance
-window.seoulMapManager = new SeoulMapManager();
+// Create global instance immediately
+console.log('📦 Creating SeoulMapManager instance...');
+const seoulMapManager = new SeoulMapManager();
 
-// Global callback for Google Maps API
-window.initializeGoogleMaps = function() {
-    if (!window.CONFIG?.IS_PRODUCTION) {
-        console.log('✅ Google Maps API loaded and ready');
+// Make it globally available immediately
+window.seoulMapManager = seoulMapManager;
+console.log('✅ window.seoulMapManager is now available:', !!window.seoulMapManager);
+
+// Also create a backup direct initialization function
+window.initializeMapManager = function() {
+    console.log('🔧 Direct initialization called');
+    if (window.seoulMapManager && typeof window.seoulMapManager.initializeMap === 'function') {
+        window.seoulMapManager.initializeMap();
+    } else {
+        console.error('❌ Map manager not ready for direct initialization');
     }
-    window.seoulMapManager.initializeMap();
 };
+
+// Export for ES6 modules
+export default seoulMapManager;

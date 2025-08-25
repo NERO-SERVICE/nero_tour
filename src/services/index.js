@@ -7,7 +7,6 @@
 
 import dataService from './data-service.js';
 import imageService from './image-service.js';
-import geolocationService from './geolocation-service.js';
 
 /**
  * 모든 서비스를 초기화합니다
@@ -90,7 +89,6 @@ export const getServicesStatus = () => {
 // 개별 서비스 export
 export { default as dataService } from './data-service.js';
 export { default as imageService } from './image-service.js';
-export { default as geolocationService } from './geolocation-service.js';
 
 // 편의를 위한 주요 함수들 re-export
 export const {

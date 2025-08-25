@@ -41,6 +41,9 @@ class DetailPage {
 
     async loadLocationData() {
         try {
+            // Wait for data service to be ready
+            await dataService.waitForReady();
+            
             // 서비스를 통해 랜드마크 데이터 로드
             this.locationData = await dataService.getLandmarkById(this.locationId);
             
@@ -281,11 +284,12 @@ class DetailPage {
 
         if (!window.CONFIG?.IS_PRODUCTION) {
             console.log('Found DOM elements:', {
-            loadingState: !!loadingState,
-            detailContent: !!detailContent,
-            headerTitle: !!headerTitle,
-            directionsFab: !!directionsFab
-        });
+                loadingState: !!loadingState,
+                detailContent: !!detailContent,
+                headerTitle: !!headerTitle,
+                directionsFab: !!directionsFab
+            });
+        }
 
         // Check if essential elements exist
         if (!loadingState || !detailContent) {
@@ -549,45 +553,46 @@ class DetailPage {
 // Make DetailPage available globally for debugging
 window.DetailPage = DetailPage;
 
-// Initialize detail page when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    if (!window.CONFIG?.IS_PRODUCTION) {
-        console.log('DOM loaded, creating DetailPage');
-    }
+// Initialize DetailPage with proper Firebase waiting
+async function initializeDetailPage() {
     try {
-        const detailPage = new DetailPage();
-        window.detailPageInstance = detailPage; // For debugging
-        if (!window.CONFIG?.IS_PRODUCTION) {
-            console.log('DetailPage created successfully');
+        console.log('🚀 Initializing Detail Page...');
+        
+        // Wait a bit for Firebase to initialize
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Check if Firebase is ready
+        let retries = 0;
+        while ((!window.Firebase || !window.Firebase.isInitialized()) && retries < 20) {
+            console.log(`⏳ Waiting for Firebase... (attempt ${retries + 1})`);
+            await new Promise(resolve => setTimeout(resolve, 250));
+            retries++;
         }
+        
+        if (!window.Firebase || !window.Firebase.isInitialized()) {
+            console.error('❌ Firebase failed to initialize after 5 seconds');
+            throw new Error('Firebase initialization timeout');
+        }
+        
+        console.log('✅ Firebase is ready, creating DetailPage instance');
+        const detailPage = new DetailPage();
+        window.detailPageInstance = detailPage;
+        
     } catch (error) {
-        console.error('Error creating DetailPage:', error);
+        console.error('❌ Error creating DetailPage:', error);
         // Show error state if initialization fails
         const loadingState = document.getElementById('loadingState');
         const errorState = document.getElementById('errorState');
         if (loadingState) loadingState.style.display = 'none';
         if (errorState) errorState.style.display = 'flex';
     }
-});
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeDetailPage);
 
 // Fallback initialization in case DOMContentLoaded already fired
-if (document.readyState === 'loading') {
-    if (!window.CONFIG?.IS_PRODUCTION) {
-        console.log('Document still loading, waiting for DOMContentLoaded');
-    }
-} else {
-    if (!window.CONFIG?.IS_PRODUCTION) {
-        console.log('Document already loaded, initializing immediately');
-    }
-    try {
-        const detailPage = new DetailPage();
-        window.detailPageInstance = detailPage; // For debugging
-    } catch (error) {
-        console.error('Error in immediate initialization:', error);
-        // Show error state if initialization fails
-        const loadingState = document.getElementById('loadingState');
-        const errorState = document.getElementById('errorState');
-        if (loadingState) loadingState.style.display = 'none';
-        if (errorState) errorState.style.display = 'flex';
-    }
+if (document.readyState !== 'loading') {
+    console.log('Document already loaded, initializing immediately');
+    initializeDetailPage();
 }

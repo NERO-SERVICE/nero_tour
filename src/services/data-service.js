@@ -111,6 +111,7 @@ class SimpleDataService {
      * 모든 랜드마크 가져오기
      */
     async getAllLandmarks() {
+        console.log('🔍 getAllLandmarks called');
         await this.waitForReady();
         
         if (!this.db) {
@@ -119,10 +120,9 @@ class SimpleDataService {
         }
 
         try {
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log('📍 랜드마크 로딩 중...');
-            }
+            console.log('📍 랜드마크 로딩 중...');
             const snapshot = await this.db.collection('landmarks').get();
+            console.log(`📊 Firestore query returned ${snapshot.size} documents`);
             
             const landmarks = [];
             snapshot.forEach(doc => {
@@ -154,6 +154,7 @@ class SimpleDataService {
      * ID로 특정 랜드마크 가져오기
      */
     async getLandmarkById(id) {
+        console.log(`🔍 Getting landmark by ID: ${id}`);
         await this.waitForReady();
         
         if (!this.db) {
@@ -162,9 +163,7 @@ class SimpleDataService {
         }
 
         try {
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log(`📍 랜드마크 ${id} 로딩 중...`);
-            }
+            console.log(`📡 Fetching from Firestore: landmarks/${id}`);
             const doc = await this.db.collection('landmarks').doc(id).get();
             
             if (!doc.exists) {
@@ -175,6 +174,8 @@ class SimpleDataService {
             }
             
             const data = doc.data();
+            console.log(`✅ Document data retrieved:`, data);
+            
             const landmark = {
                 id: doc.id,
                 ...data,
@@ -185,9 +186,7 @@ class SimpleDataService {
                 }))
             };
             
-            if (!window.CONFIG?.IS_PRODUCTION) {
-                console.log(`✅ 랜드마크 ${id} 로드 완룼`);
-            }
+            console.log(`✅ 랜드마크 ${id} 로드 완료:`, landmark);
             return landmark;
         } catch (error) {
             console.error(`❌ 랜드마크 ${id} 로드 실패:`, error);
