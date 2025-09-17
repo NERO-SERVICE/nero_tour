@@ -83,13 +83,20 @@ class ImageService {
             // CONFIG가 있는지 확인
             if (window.CONFIG && window.CONFIG.FIREBASE_CONFIG && window.CONFIG.FIREBASE_CONFIG.storageBucket) {
                 const storageBucket = window.CONFIG.FIREBASE_CONFIG.storageBucket;
-                
-                // dummydata.js의 경로를 그대로 사용 (예: 'landmarks/jeju_seonangdang_kdh.png')
-                const encodedPath = encodeURIComponent(imagePath);
+
+                // dummydata.js의 경로를 그대로 사용 (예: 'landmarks/jeju_seonangdang_kdh.png', 'restaurants/makan_halal_bbq.jpg')
+                // 경로가 이미 올바른 폴더를 포함하고 있으면 그대로 사용
+                let finalPath = imagePath;
+                if (!imagePath.startsWith('landmarks/') && !imagePath.startsWith('restaurants/')) {
+                    // 폴더 지정이 없으면 landmarks를 기본으로 사용
+                    finalPath = `landmarks/${imagePath}`;
+                }
+
+                const encodedPath = encodeURIComponent(finalPath);
                 const firebaseUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/${encodedPath}?alt=media`;
-                
+
                 if (!window.CONFIG?.IS_PRODUCTION) {
-                    console.log(`🖼️ Firebase URL for ${imagePath}:`, firebaseUrl);
+                    console.log(`🖼️ Firebase URL for ${finalPath}:`, firebaseUrl);
                 }
                 return firebaseUrl;
             } else {
@@ -215,10 +222,28 @@ class ImageService {
             return;
         }
 
-        imgElement.addEventListener('error', () => {
-            if (imgElement.src !== fallbackSrc) {
+        imgElement.addEventListener('error', (e) => {
+            const currentSrc = imgElement.src;
+
+            // JPEG/PNG 형식 변환 시도
+            if (currentSrc.includes('.jpg') && !imgElement.dataset.pngTried) {
+                const pngUrl = currentSrc.replace('.jpg', '.png');
+                imgElement.dataset.pngTried = 'true';
+                imgElement.src = pngUrl;
                 if (!window.CONFIG?.IS_PRODUCTION) {
-                    console.warn(`⚠️ Image load failed, using fallback: ${imgElement.src}`);
+                    console.log('🔄 Trying PNG fallback:', pngUrl);
+                }
+            } else if (currentSrc.includes('.png') && !imgElement.dataset.jpgTried) {
+                const jpgUrl = currentSrc.replace('.png', '.jpg');
+                imgElement.dataset.jpgTried = 'true';
+                imgElement.src = jpgUrl;
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.log('🔄 Trying JPEG fallback:', jpgUrl);
+                }
+            } else if (currentSrc !== fallbackSrc) {
+                // 모두 실패하면 기본 fallback 사용
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.warn(`⚠️ Image load failed, using fallback: ${currentSrc}`);
                 }
                 imgElement.src = fallbackSrc;
             }

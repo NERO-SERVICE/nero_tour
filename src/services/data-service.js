@@ -239,20 +239,27 @@ class SimpleDataService {
      */
     resolveImageUrl(imagePath) {
         if (!imagePath) return null;
-        
+
         // 이미 완전한 URL인 경우
         if (imagePath.startsWith('http') || imagePath.startsWith('//')) {
             return imagePath;
         }
-        
+
         // Firebase Storage URL 생성
         if (window.CONFIG?.FIREBASE_CONFIG?.storageBucket) {
             const bucket = window.CONFIG.FIREBASE_CONFIG.storageBucket;
-            const path = imagePath.startsWith('landmarks/') ? imagePath : `landmarks/${imagePath}`;
+
+            // 이미 'landmarks/' 또는 'restaurants/'로 시작하면 그대로 사용
+            // 그렇지 않으면 'landmarks/' 추가
+            let path = imagePath;
+            if (!imagePath.startsWith('landmarks/') && !imagePath.startsWith('restaurants/')) {
+                path = `landmarks/${imagePath}`;
+            }
+
             const encodedPath = encodeURIComponent(path);
             return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`;
         }
-        
+
         // 로컬 fallback
         return `/src/assets/images/${imagePath}`;
     }
