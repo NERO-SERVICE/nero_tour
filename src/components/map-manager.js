@@ -664,6 +664,9 @@ class SeoulMapManager {
     createCustomMarkerIcon(landmark) {
         const categoryIcon = this.getCategoryIcon(landmark.category, landmark);
 
+        // Sanitize ID for SVG compatibility (replace hyphens with underscores)
+        const safeId = landmark.id.replace(/-/g, '_');
+
         // Determine color scheme based on category
         let gradientColors, fillColor;
 
@@ -697,24 +700,24 @@ class SeoulMapManager {
         const svgMarker = `
             <svg xmlns="http://www.w3.org/2000/svg" width="70" height="56" viewBox="0 0 70 56">
                 <defs>
-                    <linearGradient id="gradient-${landmark.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="gradient_${safeId}" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" style="stop-color:${gradientColors.start};stop-opacity:1" />
                         <stop offset="50%" style="stop-color:${gradientColors.middle};stop-opacity:1" />
                         <stop offset="100%" style="stop-color:${gradientColors.end};stop-opacity:1" />
                     </linearGradient>
-                    <filter id="shadow-${landmark.id}" x="-50%" y="-50%" width="200%" height="200%">
+                    <filter id="shadow_${safeId}" x="-50%" y="-50%" width="200%" height="200%">
                         <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="rgba(0,0,0,0.4)"/>
                     </filter>
                 </defs>
 
                 <!-- Outer gradient border circle -->
-                <circle cx="35" cy="28" r="26" fill="url(#gradient-${landmark.id})" filter="url(#shadow-${landmark.id})" opacity="1"/>
+                <circle cx="35" cy="28" r="26" fill="url(#gradient_${safeId})" filter="url(#shadow_${safeId})" opacity="1"/>
 
                 <!-- Inner white circle -->
                 <circle cx="35" cy="28" r="22" fill="white"/>
 
                 <!-- Inner gradient background -->
-                <circle cx="35" cy="28" r="19" fill="url(#gradient-${landmark.id})" opacity="0.15"/>
+                <circle cx="35" cy="28" r="19" fill="url(#gradient_${safeId})" opacity="0.15"/>
 
                 <!-- Category icon -->
                 <text x="35" y="36" text-anchor="middle" fill="${fillColor}" font-size="20" font-family="system-ui" font-weight="600">${categoryIcon}</text>

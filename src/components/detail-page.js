@@ -318,8 +318,8 @@ class DetailPage {
         const contentHTML = `
             <!-- Hero Section -->
             <div class="detail-hero">
-                <img src="${heroImageSrc}" alt="${this.locationData.name}" 
-                     onerror="this.parentElement.classList.add('no-image');">
+                <img src="${heroImageSrc}" alt="${this.locationData.name}"
+                     onerror="this.style.display='none'; this.parentElement.classList.add('no-image');">
                 <div class="detail-hero-overlay">
                     <div class="detail-hero-title">${this.locationData.name}</div>
                     <div class="detail-hero-subtitle">${this.locationData.nameKorean}</div>
@@ -411,8 +411,8 @@ class DetailPage {
             return `
                 <div class="detail-section">
                     <div class="detail-section-image">
-                        <img src="${sectionImageSrc}" alt="${section.title}" 
-                             onerror="this.parentElement.style.display='none';">
+                        <img src="${sectionImageSrc}" alt="${section.title}"
+                             onerror="this.style.display='none'; this.parentElement.classList.add('no-image');">
                     </div>
                     <div class="detail-section-title">${section.title}</div>
                     <div class="detail-section-description">${section.description}</div>
