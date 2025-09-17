@@ -40,6 +40,7 @@ class SeoulMapManager {
         this.landmarks = []; // 캐시된 랜드마크 데이터
         this.placesService = null; // Google Places 서비스
         this.searchMarkers = []; // 검색 결과 마커들
+        this.activeFilters = new Set(); // Active category filters
         
         console.log('🔧 Calling init()...');
         this.init();
@@ -74,7 +75,10 @@ class SeoulMapManager {
         
         // Setup search functionality
         this.setupSearchListeners();
-        
+
+        // Setup category toggle listeners
+        this.setupCategoryToggles();
+
         // Get user location once on load
         this.getCurrentLocation();
     }
@@ -656,35 +660,64 @@ class SeoulMapManager {
         });
     }
 
-    // Create simple icon-based marker with purple gradient
-    createCustomMarkerIcon(landmark) {        
-        const categoryIcon = this.getCategoryIcon(landmark.category);
-        
-        // Larger mobile-optimized pin with purple gradient border
+    // Create simple icon-based marker with category-specific colors
+    createCustomMarkerIcon(landmark) {
+        const categoryIcon = this.getCategoryIcon(landmark.category, landmark);
+
+        // Determine color scheme based on category
+        let gradientColors, fillColor;
+
+        if (landmark.category === 'halal') {
+            // Green gradient for Halal
+            gradientColors = {
+                start: '#10b981',
+                middle: '#059669',
+                end: '#047857'
+            };
+            fillColor = '#10b981';
+        } else if (landmark.category === 'kpdh') {
+            // Purple gradient for KPDH (lowercase)
+            gradientColors = {
+                start: '#667eea',
+                middle: '#764ba2',
+                end: '#aa6dd8'
+            };
+            fillColor = '#667eea';
+        } else {
+            // Default gray for others
+            gradientColors = {
+                start: '#9ca3af',
+                middle: '#6b7280',
+                end: '#4b5563'
+            };
+            fillColor = '#6b7280';
+        }
+
+        // Larger mobile-optimized pin with category-specific gradient border
         const svgMarker = `
             <svg xmlns="http://www.w3.org/2000/svg" width="70" height="56" viewBox="0 0 70 56">
                 <defs>
-                    <linearGradient id="purpleGradient-${landmark.id}" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#aa6dd8;stop-opacity:1" />
+                    <linearGradient id="gradient-${landmark.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:${gradientColors.start};stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:${gradientColors.middle};stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:${gradientColors.end};stop-opacity:1" />
                     </linearGradient>
                     <filter id="shadow-${landmark.id}" x="-50%" y="-50%" width="200%" height="200%">
                         <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="rgba(0,0,0,0.4)"/>
                     </filter>
                 </defs>
-                
+
                 <!-- Outer gradient border circle -->
-                <circle cx="35" cy="28" r="26" fill="url(#purpleGradient-${landmark.id})" filter="url(#shadow-${landmark.id})" opacity="1"/>
-                
+                <circle cx="35" cy="28" r="26" fill="url(#gradient-${landmark.id})" filter="url(#shadow-${landmark.id})" opacity="1"/>
+
                 <!-- Inner white circle -->
                 <circle cx="35" cy="28" r="22" fill="white"/>
-                
+
                 <!-- Inner gradient background -->
-                <circle cx="35" cy="28" r="19" fill="url(#purpleGradient-${landmark.id})" opacity="0.15"/>
-                
+                <circle cx="35" cy="28" r="19" fill="url(#gradient-${landmark.id})" opacity="0.15"/>
+
                 <!-- Category icon -->
-                <text x="35" y="36" text-anchor="middle" fill="#667eea" font-size="20" font-family="system-ui" font-weight="600">${categoryIcon}</text>
+                <text x="35" y="36" text-anchor="middle" fill="${fillColor}" font-size="20" font-family="system-ui" font-weight="600">${categoryIcon}</text>
             </svg>
         `;
 
@@ -696,13 +729,16 @@ class SeoulMapManager {
     }
 
     // Get category icon for markers
-    getCategoryIcon(category) {
+    getCategoryIcon(category, landmark = null) {
         const icons = {
+            'kpdh': '🏛️',
+            'halal': '🕌',
             'historical': '🏛️',
-            'landmark': '🗼', 
+            'landmark': '🗼',
             'shopping': '🛍️',
             'modern': '🏢',
             'cultural': '🏘️',
+            'restaurant': '🍽️',
             'default': '📍'
         };
         return icons[category] || icons.default;
@@ -719,6 +755,10 @@ class SeoulMapManager {
             console.log('🗺️ Adding attraction markers...');
             const landmarks = await this.getSeoulLandmarks();
             console.log(`📍 Adding ${landmarks.length} markers to map`);
+
+            // Debug: Log categories found
+            const categories = [...new Set(landmarks.map(l => l.category))];
+            console.log('📊 Categories found in data:', categories);
             
             landmarks.forEach((landmark, index) => {
                 console.log(`Adding marker ${index + 1}:`, landmark.name);
@@ -730,7 +770,8 @@ class SeoulMapManager {
                     map: this.map,
                     title: landmark.name,
                     icon: markerIcon,
-                    zIndex: 100
+                    zIndex: 100,
+                    visible: false // Start with all markers hidden
                 });
 
                 // Store marker reference with landmark data
@@ -1414,6 +1455,94 @@ class SeoulMapManager {
             marker.setMap(null);
         });
         this.searchMarkers = [];
+    }
+
+    // Setup category toggle buttons
+    setupCategoryToggles() {
+        const kpdhToggle = document.getElementById('kpdhToggle');
+        const halalToggle = document.getElementById('halalToggle');
+
+        if (!kpdhToggle || !halalToggle) {
+            console.warn('⚠️ Category toggle buttons not found');
+            return;
+        }
+
+        // KPDH toggle click handler
+        kpdhToggle.addEventListener('click', () => {
+            this.toggleCategoryFilter('kpdh', kpdhToggle);
+        });
+
+        // Halal toggle click handler
+        halalToggle.addEventListener('click', () => {
+            this.toggleCategoryFilter('halal', halalToggle);
+        });
+
+        console.log('✅ Category toggles initialized');
+    }
+
+    // Toggle category filter
+    toggleCategoryFilter(category, buttonElement) {
+        // Button categories match Firebase data categories (both lowercase)
+        const actualCategory = category;
+
+        if (this.activeFilters.has(actualCategory)) {
+            // Remove filter
+            this.activeFilters.delete(actualCategory);
+            buttonElement.classList.remove('active');
+            console.log(`🔴 Removed ${actualCategory} filter`);
+        } else {
+            // Add filter
+            this.activeFilters.add(actualCategory);
+            buttonElement.classList.add('active');
+            console.log(`🟢 Added ${actualCategory} filter`);
+        }
+
+        // Update marker visibility
+        this.updateMarkerVisibility();
+    }
+
+    // Update marker visibility based on active filters
+    updateMarkerVisibility() {
+        if (!this.attractionMarkers || this.attractionMarkers.length === 0) {
+            console.warn('⚠️ No markers to filter');
+            return;
+        }
+
+        let visibleCount = 0;
+        this.attractionMarkers.forEach(({ marker, landmark }) => {
+            // Check if landmark matches any active filter
+            const shouldShow = this.shouldShowLandmark(landmark);
+
+            // Set marker visibility
+            marker.setVisible(shouldShow);
+            if (shouldShow) visibleCount++;
+        });
+
+        console.log(`🗺️ Updated visibility: ${visibleCount}/${this.attractionMarkers.length} markers visible`);
+        console.log(`📌 Active filters:`, Array.from(this.activeFilters));
+    }
+
+    // Check if landmark should be shown based on active filters
+    shouldShowLandmark(landmark) {
+        // If no filters are active, hide all landmarks
+        if (this.activeFilters.size === 0) {
+            return false;
+        }
+
+        // Check if landmark's category matches any active filter
+        return this.activeFilters.has(landmark.category);
+    }
+
+    // Check if landmark is KPDH
+    isKPDHLandmark(landmark) {
+        // Check category field for 'kpdh' (lowercase)
+        return landmark.category === 'kpdh';
+    }
+
+    // Check if landmark is Halal
+    isHalalLandmark(landmark) {
+        // Check category field for 'halal'
+        return landmark.category === 'halal';
     }
 }
 

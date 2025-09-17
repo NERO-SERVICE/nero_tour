@@ -58,20 +58,19 @@ async function migrateFirestore() {
             console.log(`✅ Category migrated: ${category.name}`);
         }
 
-        // Landmarks 마이그레이션
+        // Landmarks 마이그레이션 (KPDH landmarks)
         const landmarksRef = db.collection('landmarks');
         for (const landmark of landmarks) {
             const cleanedLandmark = cleanDataForFirestore(landmark);
             await landmarksRef.doc(landmark.id).set(cleanedLandmark);
-            console.log(`✅ Landmark migrated: ${landmark.name}`);
+            console.log(`✅ KPDH Landmark migrated: ${landmark.name}`);
         }
 
-        // Halal Restaurants 마이그레이션
+        // Halal Restaurants도 landmarks 컬렉션에 추가
         if (halalRestaurants && halalRestaurants.length > 0) {
-            const halalRef = db.collection('halalRestaurants');
             for (const restaurant of halalRestaurants) {
                 const cleanedRestaurant = cleanDataForFirestore(restaurant);
-                await halalRef.doc(restaurant.id).set(cleanedRestaurant);
+                await landmarksRef.doc(restaurant.id).set(cleanedRestaurant);
                 console.log(`✅ Halal restaurant migrated: ${restaurant.name}`);
             }
         }

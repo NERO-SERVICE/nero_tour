@@ -615,6 +615,320 @@ export const halalRestaurants = [
         stations: [
             { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '3' }
         ]
+    },
+
+    // Additional 10 Halal restaurants
+    {
+        id: 'halal-usmania',
+        name: 'Usmania Restaurant',
+        nameKorean: '우스마니아 레스토랑',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Pakistani', 'Indian', 'Restaurant'],
+        description: 'Authentic Pakistani and Indian halal cuisine',
+        longDescription: 'Usmania Restaurant brings authentic Pakistani and North Indian flavors to Seoul. All meat is strictly Halal certified, featuring traditional tandoori dishes, biryanis, and curries.',
+        coordinates: {
+            lat: 37.5335,
+            lng: 126.9950
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/usmania.jpg',
+        cuisine: 'Pakistani/Indian',
+        priceRange: '$$',
+        halalCertification: 'KMF Certified',
+        tips: [
+            'Famous for authentic biryani',
+            'Tandoori bread made fresh',
+            'Weekend lunch buffet available',
+            'Spice level can be adjusted'
+        ],
+        hours: '11:00 - 22:30 (Daily)',
+        phone: '+82-2-798-7171',
+        nearbySubway: 'Itaewon Station (Line 6, Exit 2)',
+        stations: [
+            { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '2' }
+        ]
+    },
+
+    {
+        id: 'halal-dubai',
+        name: 'Dubai Restaurant',
+        nameKorean: '두바이 레스토랑',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Middle Eastern', 'Arabic', 'Restaurant'],
+        description: 'Middle Eastern cuisine with authentic Arabic flavors',
+        longDescription: 'Dubai Restaurant offers a wide range of Middle Eastern dishes from UAE, Lebanon, and Egypt. All ingredients are Halal certified with authentic Arabic spices and cooking methods.',
+        coordinates: {
+            lat: 37.5344,
+            lng: 126.9960
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/dubai.jpg',
+        cuisine: 'Middle Eastern',
+        priceRange: '$$$',
+        halalCertification: 'KMF Certified',
+        tips: [
+            'Try the mixed grill platter',
+            'Fresh Arabic bread daily',
+            'Authentic hummus and falafel',
+            'Private dining rooms available'
+        ],
+        hours: '11:30 - 23:00 (Daily)',
+        phone: '+82-2-793-4323',
+        nearbySubway: 'Itaewon Station (Line 6, Exit 4)',
+        stations: [
+            { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '4' }
+        ]
+    },
+
+    {
+        id: 'halal-casablanca',
+        name: 'Casablanca Moroccan Restaurant',
+        nameKorean: '카사블랑카 모로칸',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Moroccan', 'North African', 'Restaurant'],
+        description: 'Authentic Moroccan cuisine with traditional tagines',
+        longDescription: 'Casablanca brings the exotic flavors of Morocco to Seoul. Featuring traditional tagines, couscous, and Moroccan pastries, all prepared with Halal certified ingredients.',
+        coordinates: {
+            lat: 37.5348,
+            lng: 126.9942
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/casablanca.jpg',
+        cuisine: 'Moroccan',
+        priceRange: '$$$',
+        halalCertification: 'Self-Certified Halal',
+        tips: [
+            'Lamb tagine is a must-try',
+            'Traditional mint tea served',
+            'Belly dancing shows on weekends',
+            'Reservation recommended'
+        ],
+        hours: '12:00 - 22:00 (Closed Mondays)',
+        phone: '+82-2-796-1447',
+        nearbySubway: 'Itaewon Station (Line 6, Exit 1)',
+        stations: [
+            { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '1' }
+        ]
+    },
+
+    {
+        id: 'halal-kervan',
+        name: 'Kervan Turkish Kebab',
+        nameKorean: '케르반 터키 케밥',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Turkish', 'Kebab', 'Fast Food'],
+        description: 'Quick service Turkish kebabs and wraps',
+        longDescription: 'Kervan offers authentic Turkish street food with a focus on kebabs, doner, and wraps. Perfect for a quick Halal meal on the go.',
+        coordinates: {
+            lat: 37.5563,
+            lng: 126.9230
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/kervan.jpg',
+        cuisine: 'Turkish',
+        priceRange: '$',
+        halalCertification: 'KMF Certified',
+        tips: [
+            'Best doner kebab in Hongdae',
+            'Affordable prices for students',
+            'Quick service for lunch',
+            'Vegetarian options available'
+        ],
+        hours: '10:00 - 23:00 (Daily)',
+        phone: '+82-2-332-3033',
+        nearbySubway: 'Hongik University Station (Line 2, Exit 9)',
+        stations: [
+            { nameKorean: '홍대입구', nameEnglish: 'Hongik University', line: '2', exit: '9' }
+        ]
+    },
+
+    {
+        id: 'halal-murree',
+        name: 'Murree Muslim Food',
+        nameKorean: '무리 무슬림 푸드',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Pakistani', 'Bangladeshi', 'Restaurant'],
+        description: 'Pakistani and Bangladeshi halal specialties',
+        longDescription: 'Murree Muslim Food serves authentic Pakistani and Bangladeshi cuisine. Popular among the Muslim community for its genuine flavors and strict Halal standards.',
+        coordinates: {
+            lat: 37.5338,
+            lng: 126.9965
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/murree.jpg',
+        cuisine: 'Pakistani/Bangladeshi',
+        priceRange: '$',
+        halalCertification: 'Muslim-Owned',
+        tips: [
+            'Nihari is a specialty',
+            'Fresh naan bread all day',
+            'Popular with locals',
+            'Cash only payment'
+        ],
+        hours: '11:00 - 22:00 (Daily)',
+        phone: '+82-2-749-0515',
+        nearbySubway: 'Itaewon Station (Line 6, Exit 3)',
+        stations: [
+            { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '3' }
+        ]
+    },
+
+    {
+        id: 'halal-yangyang',
+        name: 'Yang Good Restaurant',
+        nameKorean: '양굿 레스토랑',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Chinese', 'Muslim Chinese', 'Restaurant'],
+        description: 'Halal Chinese cuisine from Xinjiang region',
+        longDescription: 'Yang Good specializes in Muslim Chinese cuisine from the Xinjiang region. Features lamb skewers, hand-pulled noodles, and Uyghur specialties.',
+        coordinates: {
+            lat: 37.5645,
+            lng: 126.9851
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/yanggood.jpg',
+        cuisine: 'Chinese (Halal)',
+        priceRange: '$$',
+        halalCertification: 'Muslim-Owned',
+        tips: [
+            'Famous for lamb skewers',
+            'Hand-pulled noodles made fresh',
+            'Large portions',
+            'Popular with Chinese Muslims'
+        ],
+        hours: '11:00 - 22:30 (Daily)',
+        phone: '+82-2-2268-7834',
+        nearbySubway: 'Dongdaemun Station (Line 1/4, Exit 7)',
+        stations: [
+            { nameKorean: '동대문', nameEnglish: 'Dongdaemun', line: '1', exit: '7' },
+            { nameKorean: '동대문', nameEnglish: 'Dongdaemun', line: '4', exit: '7' }
+        ]
+    },
+
+    {
+        id: 'halal-alchon',
+        name: 'Al Chon Halal Kitchen',
+        nameKorean: '알촌 할랄 키친',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Korean', 'Fusion', 'Restaurant'],
+        description: 'Korean-style halal fusion cuisine',
+        longDescription: 'Al Chon offers a unique fusion of Korean flavors with Halal requirements. Try Korean BBQ, kimchi stew, and other Korean favorites prepared with Halal meat.',
+        coordinates: {
+            lat: 37.4990,
+            lng: 127.0266
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/alchon.jpg',
+        cuisine: 'Korean (Halal)',
+        priceRange: '$$',
+        halalCertification: 'KMF Certified',
+        tips: [
+            'Halal Korean BBQ experience',
+            'Kimchi made without alcohol',
+            'Popular with Muslim tourists',
+            'English menu available'
+        ],
+        hours: '11:30 - 22:00 (Daily)',
+        phone: '+82-2-557-8903',
+        nearbySubway: 'Gangnam Station (Line 2, Exit 11)',
+        stations: [
+            { nameKorean: '강남', nameEnglish: 'Gangnam', line: '2', exit: '11' }
+        ]
+    },
+
+    {
+        id: 'halal-petra',
+        name: 'Petra Middle Eastern Restaurant',
+        nameKorean: '페트라 중동 레스토랑',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Jordanian', 'Middle Eastern', 'Restaurant'],
+        description: 'Jordanian and Levantine halal cuisine',
+        longDescription: 'Petra brings authentic Jordanian and Levantine flavors to Seoul. Featuring mansaf, kebabs, and mezze platters, all prepared according to Halal standards.',
+        coordinates: {
+            lat: 37.5346,
+            lng: 126.9938
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/petra.jpg',
+        cuisine: 'Jordanian',
+        priceRange: '$$',
+        halalCertification: 'Self-Certified',
+        tips: [
+            'Mansaf is the national dish',
+            'Great mezze selection',
+            'Shisha available',
+            'Rooftop seating in summer'
+        ],
+        hours: '12:00 - 23:00 (Daily)',
+        phone: '+82-2-790-5768',
+        nearbySubway: 'Itaewon Station (Line 6, Exit 2)',
+        stations: [
+            { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '2' }
+        ]
+    },
+
+    {
+        id: 'halal-samarkand',
+        name: 'Samarkand Central Asian Cuisine',
+        nameKorean: '사마르칸트 중앙아시아',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Uzbek', 'Central Asian', 'Restaurant'],
+        description: 'Authentic Uzbek and Central Asian halal food',
+        longDescription: 'Samarkand offers authentic Central Asian cuisine from Uzbekistan and Kazakhstan. Famous for plov, manti, and shashlik, all Halal certified.',
+        coordinates: {
+            lat: 37.5650,
+            lng: 126.9847
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/samarkand.jpg',
+        cuisine: 'Uzbek',
+        priceRange: '$$',
+        halalCertification: 'Muslim-Owned',
+        tips: [
+            'Plov is cooked in traditional style',
+            'Fresh tandoor bread',
+            'Live Uzbek music on Fridays',
+            'Popular with Central Asian community'
+        ],
+        hours: '11:00 - 23:00 (Daily)',
+        phone: '+82-2-2237-8580',
+        nearbySubway: 'Dongdaemun History & Culture Park (Line 2/4/5, Exit 12)',
+        stations: [
+            { nameKorean: '동대문역사문화공원', nameEnglish: 'Dongdaemun History & Culture Park', line: '2', exit: '12' },
+            { nameKorean: '동대문역사문화공원', nameEnglish: 'Dongdaemun History & Culture Park', line: '4', exit: '12' },
+            { nameKorean: '동대문역사문화공원', nameEnglish: 'Dongdaemun History & Culture Park', line: '5', exit: '12' }
+        ]
+    },
+
+    {
+        id: 'halal-myeongdong-gyoja',
+        name: 'Myeongdong Halal Kitchen',
+        nameKorean: '명동 할랄 키친',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Korean', 'Tourist', 'Restaurant'],
+        description: 'Halal Korean food in the heart of Myeongdong',
+        longDescription: 'Located in the bustling Myeongdong shopping district, this restaurant offers Halal versions of popular Korean dishes for Muslim tourists.',
+        coordinates: {
+            lat: 37.5636,
+            lng: 126.9869
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/myeongdong_halal.jpg',
+        cuisine: 'Korean (Halal)',
+        priceRange: '$$',
+        halalCertification: 'KMF Certified',
+        tips: [
+            'Convenient location for tourists',
+            'Halal bulgogi and bibimbap',
+            'Prayer room available',
+            'Multiple language menus'
+        ],
+        hours: '10:00 - 22:00 (Daily)',
+        phone: '+82-2-318-2466',
+        nearbySubway: 'Myeongdong Station (Line 4, Exit 8)',
+        stations: [
+            { nameKorean: '명동', nameEnglish: 'Myeongdong', line: '4', exit: '8' }
+        ]
     }
 ];
 
@@ -633,8 +947,13 @@ export function generateSampleData() {
     };
 }
 
+// Combine all landmarks and halal restaurants
+export const allLandmarks = [...landmarks, ...halalRestaurants];
+
 export default {
     categories,
     landmarks,
+    halalRestaurants,
+    allLandmarks,
     generateSampleData
 };
