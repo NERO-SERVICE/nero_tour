@@ -8,6 +8,8 @@ class SimpleDataService {
         this.db = null;
         this.isReady = false;
         this.readyCallbacks = [];
+        this.imageCache = new Map(); // 이미지 URL 존재 여부 캐시
+        this.imageLoadPromises = new Map(); // 중복 요청 방지
     }
 
     /**
@@ -237,6 +239,65 @@ class SimpleDataService {
     /**
      * 이미지 URL 처리
      */
+
+    /**
+     * Firebase Storage에서 이미지 존재 여부 확인
+     */
+    async checkImageExists(imagePath) {
+        if (!imagePath || !window.CONFIG?.FIREBASE_CONFIG?.storageBucket) {
+            return false;
+        }
+
+        // 캐시에서 확인
+        if (this.imageCache.has(imagePath)) {
+            return this.imageCache.get(imagePath);
+        }
+
+        // 중복 요청 방지
+        if (this.imageLoadPromises.has(imagePath)) {
+            return this.imageLoadPromises.get(imagePath);
+        }
+
+        const checkPromise = this.performImageCheck(imagePath);
+        this.imageLoadPromises.set(imagePath, checkPromise);
+
+        try {
+            const exists = await checkPromise;
+            this.imageCache.set(imagePath, exists);
+            return exists;
+        } finally {
+            this.imageLoadPromises.delete(imagePath);
+        }
+    }
+
+    /**
+     * 실제 이미지 존재 여부 확인 로직
+     */
+    async performImageCheck(imagePath) {
+        const bucket = window.CONFIG.FIREBASE_CONFIG.storageBucket;
+        const encodedPath = encodeURIComponent(imagePath);
+        const firebaseUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`;
+
+        try {
+            const response = await fetch(firebaseUrl, { method: 'HEAD' });
+            const exists = response.ok;
+
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.log(`🔍 Image check: ${imagePath} → ${exists ? 'EXISTS' : 'NOT_FOUND'}`);
+            }
+
+            return exists;
+        } catch (error) {
+            if (!window.CONFIG?.IS_PRODUCTION) {
+                console.warn(`⚠️ Image check failed for ${imagePath}:`, error);
+            }
+            return false;
+        }
+    }
+
+    /**
+     * 이미지 URL 처리 (동적 존재 확인)
+     */
     resolveImageUrl(imagePath) {
         if (!imagePath) return null;
 
@@ -249,15 +310,61 @@ class SimpleDataService {
         if (window.CONFIG?.FIREBASE_CONFIG?.storageBucket) {
             const bucket = window.CONFIG.FIREBASE_CONFIG.storageBucket;
 
-            // 이미 'landmarks/' 또는 'restaurants/'로 시작하면 그대로 사용
-            // 그렇지 않으면 'landmarks/' 추가
+            // 모든 경로에 대해 Firebase Storage URL 생성
             let path = imagePath;
             if (!imagePath.startsWith('landmarks/') && !imagePath.startsWith('restaurants/')) {
                 path = `landmarks/${imagePath}`;
             }
 
             const encodedPath = encodeURIComponent(path);
-            return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`;
+            const firebaseUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`;
+
+            return firebaseUrl;
+        }
+
+        // 로컬 fallback
+        return `/src/assets/images/${imagePath}`;
+    }
+
+    /**
+     * 안전한 이미지 URL 생성 (존재 여부 확인 포함)
+     */
+    async resolveImageUrlSafe(imagePath) {
+        if (!imagePath) return null;
+
+        // 이미 완전한 URL인 경우
+        if (imagePath.startsWith('http') || imagePath.startsWith('//')) {
+            return imagePath;
+        }
+
+        // Firebase Storage 사용 가능한 경우
+        if (window.CONFIG?.FIREBASE_CONFIG?.storageBucket) {
+            // 경로 정규화
+            let path = imagePath;
+            if (!imagePath.startsWith('landmarks/') && !imagePath.startsWith('restaurants/')) {
+                path = `landmarks/${imagePath}`;
+            }
+
+            // 이미지 존재 여부 확인
+            const exists = await this.checkImageExists(path);
+
+            if (exists) {
+                const bucket = window.CONFIG.FIREBASE_CONFIG.storageBucket;
+                const encodedPath = encodeURIComponent(path);
+                const firebaseUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`;
+
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.log(`✅ Firebase image: ${path}`);
+                }
+
+                return firebaseUrl;
+            } else {
+                if (!window.CONFIG?.IS_PRODUCTION) {
+                    console.log(`🔄 Fallback image: ${path} → placeholder`);
+                }
+
+                return '/src/assets/images/ui/placeholder.png';
+            }
         }
 
         // 로컬 fallback

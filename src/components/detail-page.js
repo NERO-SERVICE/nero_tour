@@ -61,14 +61,6 @@ class DetailPage {
             this.locationData = landmarks.find(location => location.id === this.locationId);
             
             if (this.locationData) {
-                // 이미지 경로 변환
-                this.locationData.image = imageService.getLandmarkImage(this.locationData.image);
-                if (this.locationData.detailSections) {
-                    this.locationData.detailSections = this.locationData.detailSections.map(section => ({
-                        ...section,
-                        image: imageService.getLandmarkImage(section.image)
-                    }));
-                }
                 this.renderLocationDetails();
             } else {
                 this.showError();
@@ -314,12 +306,10 @@ class DetailPage {
         }
 
         // Build content
-        const heroImageSrc = this.locationData.image || imageService.getLandmarkImage(this.locationData.image);
         const contentHTML = `
             <!-- Hero Section -->
             <div class="detail-hero">
-                <img src="${heroImageSrc}" alt="${this.locationData.name}"
-                     onerror="this.style.display='none'; this.parentElement.classList.add('no-image');">
+                <div class="smart-image-container detail-image" id="heroImageContainer"></div>
                 <div class="detail-hero-overlay">
                     <div class="detail-hero-title">${this.locationData.name}</div>
                     <div class="detail-hero-subtitle">${this.locationData.nameKorean}</div>
@@ -389,15 +379,47 @@ class DetailPage {
         `;
 
         detailContent.innerHTML = contentHTML;
-        
-        // 이미지 fallback 처리 추가
-        const images = detailContent.querySelectorAll('img');
-        images.forEach(img => {
-            imageService.addImageFallback(img);
-        });
+
+        // 스마트 이미지 로드
+        this.loadSmartImages();
         
         if (!window.CONFIG?.IS_PRODUCTION) {
             console.log('Content rendered successfully');
+        }
+    }
+
+    /**
+     * 스마트 이미지 로드
+     */
+    async loadSmartImages() {
+        // Hero 이미지 로드
+        const heroContainer = document.getElementById('heroImageContainer');
+        if (heroContainer && this.locationData.image) {
+            const heroSmartImage = new window.SmartImage(heroContainer, {
+                showLoadingIndicator: true,
+                retryAttempts: 3
+            });
+            await heroSmartImage.loadImage(this.locationData.image, this.locationData.name);
+        }
+
+        // Section 이미지들 로드
+        if (this.locationData.detailSections) {
+            for (let i = 0; i < this.locationData.detailSections.length; i++) {
+                const section = this.locationData.detailSections[i];
+                const sectionContainer = document.getElementById(`sectionImage${i}`);
+
+                if (sectionContainer && section.image) {
+                    const sectionSmartImage = new window.SmartImage(sectionContainer, {
+                        showLoadingIndicator: false,
+                        retryAttempts: 2
+                    });
+                    await sectionSmartImage.loadImage(section.image, section.title);
+                }
+            }
+        }
+
+        if (!window.CONFIG?.IS_PRODUCTION) {
+            console.log('✅ All smart images loaded');
         }
     }
 
@@ -406,13 +428,11 @@ class DetailPage {
             return '';
         }
 
-        return this.locationData.detailSections.map(section => {
-            const sectionImageSrc = section.image || imageService.getLandmarkImage(section.image);
+        return this.locationData.detailSections.map((section, index) => {
             return `
                 <div class="detail-section">
                     <div class="detail-section-image">
-                        <img src="${sectionImageSrc}" alt="${section.title}"
-                             onerror="this.style.display='none'; this.parentElement.classList.add('no-image');">
+                        <div class="smart-image-container" id="sectionImage${index}"></div>
                     </div>
                     <div class="detail-section-title">${section.title}</div>
                     <div class="detail-section-description">${section.description}</div>

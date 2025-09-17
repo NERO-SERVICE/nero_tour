@@ -1,0 +1,194 @@
+/**
+ * Smart Image Component Styles
+ * 이미지 로딩, 에러, 성공 상태에 대한 스타일
+ */
+
+.smart-image {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.smart-image-content {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.smart-image-fallback {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0.8;
+}
+
+/* 로딩 상태 */
+.smart-image.image-loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.image-loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 12px;
+}
+
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #e0e0e0;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 성공 상태 */
+.smart-image.image-success {
+    background-color: transparent;
+}
+
+.smart-image.image-success .smart-image-content {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 에러/Fallback 상태 */
+.smart-image.image-error {
+    background-color: #f8f9fa;
+    border: 1px dashed #dee2e6;
+}
+
+.image-fallback-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #6c757d;
+    text-align: center;
+    padding: 20px;
+}
+
+.image-fallback-icon i {
+    font-size: 24px;
+    opacity: 0.5;
+}
+
+.image-fallback-icon span {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+    }
+
+    .image-loading-indicator {
+        font-size: 11px;
+    }
+
+    .image-fallback-icon i {
+        font-size: 20px;
+    }
+
+    .image-fallback-icon span {
+        font-size: 11px;
+    }
+}
+
+/* 특별한 크기 변형 */
+.smart-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px; /* 기본 높이 */
+}
+
+/* 카드 이미지 크기 */
+.landmark-card .smart-image-container {
+    height: 160px;
+}
+
+/* 상세 페이지 이미지 크기 */
+.detail-image .smart-image-container {
+    height: 250px;
+}
+
+/* 지도 마커 이미지 크기 */
+.marker-image .smart-image-container {
+    height: 120px;
+}
+
+/* 호버 효과 */
+.smart-image-content:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease;
+}
+
+/* 접근성 개선 */
+.smart-image:focus-within {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+    .smart-image {
+        background-color: #2d3748;
+    }
+
+    .smart-image.image-loading {
+        background: linear-gradient(90deg, #2d3748 25%, #4a5568 50%, #2d3748 75%);
+        background-size: 200% 100%;
+    }
+
+    .smart-image.image-error {
+        background-color: #1a202c;
+        border-color: #4a5568;
+    }
+
+    .image-fallback-icon {
+        color: #a0aec0;
+    }
+
+    .image-loading-indicator {
+        color: #a0aec0;
+    }
+}
