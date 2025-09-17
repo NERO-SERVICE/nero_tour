@@ -5,60 +5,20 @@
 
 export const categories = [
     {
-        id: 'historical',
-        name: 'Historical',
-        nameKorean: '역사',
-        description: 'Historical sites and traditional Korean culture',
+        id: 'kpdh',
+        name: 'KPDH',
+        nameKorean: '한국 디지털 문화유산',
+        description: 'Korean Places for Digital Heritage - Cultural heritage sites and landmarks',
         icon: 'fas fa-landmark',
-        color: '#8B4513'
+        color: '#9C27B0'
     },
     {
-        id: 'landmark',
-        name: 'Landmark',
-        nameKorean: '랜드마크',
-        description: 'Iconic buildings and famous landmarks',
-        icon: 'fas fa-building',
-        color: '#667eea'
-    },
-    {
-        id: 'shopping',
-        name: 'Shopping',
-        nameKorean: '쇼핑',
-        description: 'Shopping districts and commercial areas',
-        icon: 'fas fa-shopping-bag',
-        color: '#ff6b6b'
-    },
-    {
-        id: 'modern',
-        name: 'Modern',
-        nameKorean: '현대',
-        description: 'Modern Seoul - business districts and urban life',
-        icon: 'fas fa-city',
-        color: '#4ecdc4'
-    },
-    {
-        id: 'cultural',
-        name: 'Cultural',
-        nameKorean: '문화',
-        description: 'Cultural sites and traditional experiences',
-        icon: 'fas fa-theater-masks',
-        color: '#45b7d1'
-    },
-    {
-        id: 'nature',
-        name: 'Nature',
-        nameKorean: '자연',
-        description: 'Parks, mountains, and natural attractions',
-        icon: 'fas fa-tree',
-        color: '#43a047'
-    },
-    {
-        id: 'food',
-        name: 'Food',
-        nameKorean: '음식',
-        description: 'Food markets, restaurants, and culinary experiences',
-        icon: 'fas fa-utensils',
-        color: '#ff9800'
+        id: 'halal',
+        name: 'Halal',
+        nameKorean: '할랄',
+        description: 'Halal certified restaurants and Muslim-friendly locations',
+        icon: 'fas fa-certificate',
+        color: '#4CAF50'
     }
 ];
 
@@ -68,7 +28,8 @@ export const landmarks = [
         id: 'jeju-seonangdang',
         name: 'Jeju Seonangdang',
         nameKorean: '제주 서낭당',
-        category: 'cultural',
+        category: 'kpdh',
+        tags: ['kpdh', 'Cultural', 'Traditional', 'Spiritual', 'Jeju'],
         description: 'Traditional Jeju shamanistic shrine protecting the village',
         longDescription: 'Seonangdang is a sacred shrine unique to Jeju Island where local deities are worshipped. These small stone structures have protected villages for centuries and represent the spiritual culture of Jeju. Visitors can witness traditional rituals and learn about the island\'s unique shamanistic heritage.',
         coordinates: {
@@ -77,7 +38,6 @@ export const landmarks = [
         },
         icon: 'fas fa-torii-gate',
         image: 'landmarks/jeju_seonangdang_kdh.png',
-        tags: ['Cultural', 'Traditional', 'Spiritual', 'Jeju'],
         tips: [
             'Respect the sacred nature of the site',
             'Photography may be restricted during rituals',
@@ -103,7 +63,8 @@ export const landmarks = [
         id: 'bukchon-hanok',
         name: 'Bukchon Hanok Village',
         nameKorean: '북촌한옥마을',
-        category: 'cultural',
+        category: 'kpdh',
+        tags: ['kpdh', 'Traditional', 'Architecture', 'Culture', 'Heritage'],
         description: 'Traditional Korean architecture village between palaces',
         longDescription: 'A well-preserved traditional village with over 600 years of history, featuring hundreds of hanok (traditional Korean houses). Located between Gyeongbokgung and Changdeokgung Palaces, this living museum showcases the beauty of Korean architecture while still serving as a residential area.',
         coordinates: {
@@ -112,7 +73,6 @@ export const landmarks = [
         },
         icon: 'fas fa-home',
         image: 'landmarks/seoul_bukchon_kdh.png',
-        tags: ['Traditional', 'Architecture', 'Culture', 'Heritage'],
         tips: [
             'Visit early morning (before 9 AM) for fewer crowds',
             'Respect residents - keep noise levels down',
@@ -140,7 +100,8 @@ export const landmarks = [
         id: 'cheongdam-bridge',
         name: 'Cheongdam Bridge',
         nameKorean: '청담대교',
-        category: 'landmark',
+        category: 'kpdh',
+        tags: ['kpdh', 'Modern', 'Bridge', 'Views', 'Architecture'],
         description: 'Elegant bridge over Han River connecting Gangnam districts',
         longDescription: 'Cheongdam Bridge is one of Seoul\'s most elegant river crossings, connecting the affluent Cheongdam and Apgujeong districts. The bridge offers spectacular views of the Seoul skyline and has become an iconic symbol of modern Seoul, especially beautiful when illuminated at night.',
         coordinates: {
@@ -149,7 +110,6 @@ export const landmarks = [
         },
         icon: 'fas fa-bridge',
         image: 'landmarks/seoul_cheongdamdaegyo_kdh.png',
-        tags: ['Modern', 'Bridge', 'Views', 'Architecture'],
         tips: [
             'Best viewed at sunset for golden hour photography',
             'Walk across for panoramic Han River views',
@@ -178,7 +138,8 @@ export const landmarks = [
         id: 'gyeongbokgung-geunjeongjeon',
         name: 'Geunjeongjeon Hall',
         nameKorean: '근정전',
-        category: 'historical',
+        category: 'kpdh',
+        tags: ['kpdh', 'Historical', 'Palace', 'UNESCO', 'Architecture'],
         description: 'The throne hall of Gyeongbokgung Palace, where kings held state affairs',
         longDescription: 'Geunjeongjeon Hall is the throne hall of Gyeongbokgung Palace, the largest of the Five Grand Palaces built during the Joseon Dynasty. This magnificent two-story structure served as the center of state affairs where kings held coronations, received foreign envoys, and conducted important national ceremonies.',
         coordinates: {
@@ -187,7 +148,6 @@ export const landmarks = [
         },
         icon: 'fas fa-landmark',
         image: 'landmarks/seoul_ilwolobongdo_kdh.png',
-        tags: ['Historical', 'Palace', 'UNESCO', 'Architecture'],
         tips: [
             'Visit during the changing of the guard ceremony (10:00, 14:00)',
             'Best photographed from the stone courtyard markers',
@@ -220,7 +180,8 @@ export const landmarks = [
         id: 'jamsil-stadium',
         name: 'Jamsil Sports Complex',
         nameKorean: '잠실주경기장',
-        category: 'modern',
+        category: 'kpdh',
+        tags: ['kpdh', 'Sports', 'Olympics', 'Entertainment', 'Modern'],
         description: 'Major sports complex and home of 1988 Seoul Olympics',
         longDescription: 'Built for the 1988 Seoul Olympics, this massive sports complex includes the Olympic Stadium, Baseball Stadium, and various indoor arenas. It remains a central venue for major sporting events, K-pop concerts, and cultural festivals, symbolizing Korea\'s modern development.',
         coordinates: {
@@ -229,7 +190,6 @@ export const landmarks = [
         },
         icon: 'fas fa-running',
         image: 'landmarks/seoul_jamsilsports_kdh.png',
-        tags: ['Sports', 'Olympics', 'Entertainment', 'Modern'],
         tips: [
             'Check event schedules for concerts and games',
             'Baseball season runs from March to October',
@@ -258,7 +218,8 @@ export const landmarks = [
         id: 'lotte-tower',
         name: 'Lotte World Tower',
         nameKorean: '롯데타워',
-        category: 'landmark',
+        category: 'kpdh',
+        tags: ['kpdh', 'Modern', 'Skyscraper', 'Views', 'Shopping'],
         description: 'Korea\'s tallest building with observation deck and luxury shopping',
         longDescription: 'Standing at 555 meters, Lotte World Tower is the 5th tallest building in the world and a symbol of modern Seoul. The tower features Seoul Sky observation deck on floors 117-123, offering breathtaking 360-degree views, along with luxury shopping, restaurants, and entertainment facilities.',
         coordinates: {
@@ -272,7 +233,6 @@ export const landmarks = [
             'landmarks/자양역.png'
         ],
         image: 'landmarks/seoul_lottetower_kdh.png', // 메인 이미지
-        tags: ['Modern', 'Skyscraper', 'Views', 'Shopping'],
         tips: [
             'Book Seoul Sky tickets online to avoid queues',
             'Visit at sunset for day and night views',
@@ -308,7 +268,8 @@ export const landmarks = [
         id: 'namsan-tower',
         name: 'N Seoul Tower',
         nameKorean: '남산타워',
-        category: 'landmark',
+        category: 'kpdh',
+        tags: ['kpdh', 'Landmark', 'Views', 'Romance'],
         description: 'Iconic communication tower offering panoramic city views',
         longDescription: 'Standing 236 meters above sea level on Namsan Mountain, N Seoul Tower is Seoul\'s most recognizable landmark. The tower offers breathtaking 360-degree views of the city and is famous for its "love locks" tradition.',
         coordinates: {
@@ -317,7 +278,6 @@ export const landmarks = [
         },
         icon: 'fas fa-broadcast-tower',
         image: 'landmarks/seoul_namsantower_kdh.png',
-        tags: ['Landmark', 'Views', 'Romance'],
         tips: [
             'Take the cable car up for scenic views',
             'Best visited at sunset for stunning photo opportunities',
@@ -344,7 +304,8 @@ export const landmarks = [
         id: 'naksan-park',
         name: 'Naksan Park',
         nameKorean: '낙산공원',
-        category: 'nature',
+        category: 'kpdh',
+        tags: ['kpdh', 'Nature', 'Historical', 'Views', 'Walking'],
         description: 'Historic mountain park with Seoul fortress walls and city views',
         longDescription: 'Located on Naksan Mountain, this park offers panoramic views of Seoul and preserves a section of the ancient Seoul City Wall. The park combines natural beauty with historical significance, featuring walking trails along the fortress walls and beautiful night views of the city.',
         coordinates: {
@@ -353,7 +314,6 @@ export const landmarks = [
         },
         icon: 'fas fa-mountain',
         image: 'landmarks/seoul_naksanpark_kdh.png',
-        tags: ['Nature', 'Historical', 'Views', 'Walking'],
         tips: [
             'Best sunset views from the fortress wall trail',
             'Cherry blossoms in spring are spectacular',
@@ -381,7 +341,8 @@ export const landmarks = [
         id: 'samsung-coex',
         name: 'COEX Mall',
         nameKorean: '삼성동 코엑스',
-        category: 'modern',
+        category: 'kpdh',
+        tags: ['kpdh', 'Shopping', 'Modern', 'Entertainment', 'Business'],
         description: 'Asia\'s largest underground shopping mall with aquarium and library',
         longDescription: 'COEX Mall in Samsung-dong is a massive underground shopping and entertainment complex. Home to the famous Starfield Library, COEX Aquarium, and hundreds of shops and restaurants, it\'s a modern urban destination that showcases Seoul\'s contemporary lifestyle and business culture.',
         coordinates: {
@@ -390,7 +351,6 @@ export const landmarks = [
         },
         icon: 'fas fa-shopping-cart',
         image: 'landmarks/seoul_samseongcoex_kdh.png',
-        tags: ['Shopping', 'Modern', 'Entertainment', 'Business'],
         tips: [
             'Visit Starfield Library for Instagram-worthy photos',
             'COEX Aquarium is great for families with children',
@@ -414,6 +374,250 @@ export const landmarks = [
     }
 ];
 
+// Halal Restaurants Data
+export const halalRestaurants = [
+    {
+        id: 'halal-makan',
+        name: 'Makan Halal Korean BBQ',
+        nameKorean: '마칸 할랄 한국 바베큐',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Korean BBQ', 'Restaurant', 'Certified'],
+        description: 'Authentic Korean BBQ with Halal certification',
+        longDescription: 'Makan offers a unique Halal Korean BBQ experience in Itaewon. All meat is certified Halal and prepared according to Islamic dietary laws, while maintaining the authentic Korean flavors and dining experience.',
+        coordinates: {
+            lat: 37.5340,
+            lng: 126.9945
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/makan_halal_bbq.jpg',
+        cuisine: 'Korean',
+        priceRange: '$$',
+        halalCertification: 'KMF Certified',
+        tips: [
+            'Popular with Muslim tourists - book ahead',
+            'All-you-can-eat options available',
+            'Staff speaks English and Arabic',
+            'Provides prayer space'
+        ],
+        hours: '11:30 - 22:00 (Daily)',
+        phone: '+82-2-792-1229',
+        nearbySubway: 'Itaewon Station (Line 6, Exit 3)',
+        stations: [
+            { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '3' }
+        ]
+    },
+    {
+        id: 'halal-eid',
+        name: 'EID Seoul - Halal Restaurant',
+        nameKorean: '이드 서울 할랄 레스토랑',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Middle Eastern', 'Turkish', 'Restaurant'],
+        description: 'Middle Eastern and Turkish cuisine with Halal certification',
+        longDescription: 'EID Seoul brings authentic Middle Eastern flavors to Seoul. Specializing in Turkish and Arab cuisine, all dishes are prepared with 100% Halal ingredients and traditional cooking methods.',
+        coordinates: {
+            lat: 37.5335,
+            lng: 126.9960
+        },
+        icon: 'fas fa-utensils',
+        image: 'restaurants/eid_seoul.jpg',
+        cuisine: 'Middle Eastern/Turkish',
+        priceRange: '$$',
+        halalCertification: 'KMF Certified',
+        tips: [
+            'Try the lamb kebabs and hummus',
+            'Shisha lounge available upstairs',
+            'Vegetarian options available',
+            'Iftar special during Ramadan'
+        ],
+        hours: '11:00 - 23:00 (Daily)',
+        phone: '+82-2-798-7444',
+        nearbySubway: 'Itaewon Station (Line 6, Exit 3)',
+        stations: [
+            { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '3' }
+        ]
+    },
+    {
+        id: 'halal-kampungku',
+        name: 'Kampungku Restaurant',
+        nameKorean: '캄풍쿠 레스토랑',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Malaysian', 'Asian', 'Restaurant'],
+        description: 'Malaysian Halal food in Itaewon',
+        longDescription: 'Kampungku serves authentic Malaysian cuisine with all Halal ingredients. Popular among Southeast Asian expats and tourists, offering a taste of home with dishes like Nasi Lemak and Rendang.',
+        coordinates: {
+            lat: 37.5345,
+            lng: 126.9935
+        },
+        icon: 'fas fa-bowl-rice',
+        image: 'restaurants/kampungku.jpg',
+        cuisine: 'Malaysian',
+        priceRange: '$',
+        halalCertification: 'Self-Certified Halal',
+        tips: [
+            'Nasi Lemak is the house special',
+            'Affordable prices for students',
+            'Takeaway available',
+            'Malaysian groceries also sold'
+        ],
+        hours: '10:00 - 22:00 (Closed Mondays)',
+        phone: '+82-2-794-6015',
+        nearbySubway: 'Itaewon Station (Line 6, Exit 3)',
+        stations: [
+            { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '3' }
+        ]
+    },
+    {
+        id: 'halal-kitchen-seoul',
+        name: 'Halal Kitchen Seoul',
+        nameKorean: '할랄 키친 서울',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Fusion', 'Korean', 'Restaurant'],
+        description: 'Fusion Halal cuisine with Korean twist',
+        longDescription: 'Halal Kitchen Seoul offers innovative fusion cuisine combining Korean flavors with Halal requirements. Popular dishes include Halal Bulgogi, Kimchi Fried Rice, and Korean-style fried chicken.',
+        coordinates: {
+            lat: 37.5550,
+            lng: 126.9707
+        },
+        icon: 'fas fa-burger',
+        image: 'restaurants/halal_kitchen_seoul.jpg',
+        cuisine: 'Korean Fusion',
+        priceRange: '$$',
+        halalCertification: 'KMF Certified',
+        tips: [
+            'Halal Korean fried chicken is a must-try',
+            'Delivery available through apps',
+            'English menu available',
+            'Popular with young locals'
+        ],
+        hours: '11:00 - 22:30 (Daily)',
+        phone: '+82-2-332-5525',
+        nearbySubway: 'Hongik University Station (Line 2, Exit 9)',
+        stations: [
+            { nameKorean: '홍대입구', nameEnglish: 'Hongik University', line: '2', exit: '9' }
+        ]
+    },
+    {
+        id: 'halal-bukhara',
+        name: 'Bukhara Indian Restaurant',
+        nameKorean: '부카라 인도 레스토랑',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Indian', 'Curry', 'Restaurant'],
+        description: 'Authentic Indian Halal cuisine',
+        longDescription: 'Bukhara brings authentic North Indian flavors to Seoul with a fully Halal menu. Known for their tandoori dishes, biryani, and wide variety of vegetarian options.',
+        coordinates: {
+            lat: 37.5633,
+            lng: 126.9830
+        },
+        icon: 'fas fa-pepper-hot',
+        image: 'restaurants/bukhara.jpg',
+        cuisine: 'Indian',
+        priceRange: '$$',
+        halalCertification: 'Muslim-Friendly',
+        tips: [
+            'Lunch buffet offers great value',
+            'Spice levels can be adjusted',
+            'Vegetarian and vegan options',
+            'Private dining rooms available'
+        ],
+        hours: '11:00 - 22:00 (Daily)',
+        phone: '+82-2-778-0820',
+        nearbySubway: 'Myeongdong Station (Line 4, Exit 3)',
+        stations: [
+            { nameKorean: '명동', nameEnglish: 'Myeongdong', line: '4', exit: '3' }
+        ]
+    },
+    {
+        id: 'halal-salam',
+        name: 'Salam Restaurant',
+        nameKorean: '살람 레스토랑',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Egyptian', 'Arab', 'Restaurant'],
+        description: 'Egyptian and Arab cuisine',
+        longDescription: 'Salam Restaurant specializes in authentic Egyptian and Levantine cuisine. Popular dishes include Koshari, Shawarma, and fresh Falafel, all prepared with 100% Halal ingredients.',
+        coordinates: {
+            lat: 37.5338,
+            lng: 126.9940
+        },
+        icon: 'fas fa-utensils',
+        image: 'restaurants/salam.jpg',
+        cuisine: 'Egyptian/Arab',
+        priceRange: '$',
+        halalCertification: 'Owner Muslim',
+        tips: [
+            'Koshari is highly recommended',
+            'Fresh bread baked daily',
+            'Shisha available in outdoor seating',
+            'Egyptian tea and coffee served'
+        ],
+        hours: '11:00 - 23:30 (Daily)',
+        phone: '+82-2-793-4323',
+        nearbySubway: 'Itaewon Station (Line 6, Exit 3)',
+        stations: [
+            { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '3' }
+        ]
+    },
+    {
+        id: 'halal-zafran',
+        name: 'Zafran Indian Restaurant',
+        nameKorean: '자프란 인도 레스토랑',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Indian', 'Fine Dining', 'Restaurant'],
+        description: 'Premium Indian dining with Halal options',
+        longDescription: 'Zafran offers upscale Indian dining experience with a fully Halal menu. Known for their authentic recipes from various regions of India, including Kashmir, Punjab, and South India.',
+        coordinates: {
+            lat: 37.5080,
+            lng: 127.0615
+        },
+        icon: 'fas fa-mortar-pestle',
+        image: 'restaurants/zafran.jpg',
+        cuisine: 'Indian',
+        priceRange: '$$$',
+        halalCertification: 'Muslim-Friendly',
+        tips: [
+            'Reservation recommended for dinner',
+            'Extensive vegetarian menu',
+            'Wine alternatives available',
+            'Business lunch specials'
+        ],
+        hours: '11:30 - 22:00 (Daily)',
+        phone: '+82-2-543-5573',
+        nearbySubway: 'Samseong Station (Line 2, Exit 5)',
+        stations: [
+            { nameKorean: '삼성', nameEnglish: 'Samseong', line: '2', exit: '5' }
+        ]
+    },
+    {
+        id: 'halal-pasha',
+        name: 'Pasha Turkish Restaurant',
+        nameKorean: '파샤 터키 레스토랑',
+        category: 'halal',
+        tags: ['halal', 'Halal', 'Turkish', 'Mediterranean', 'Restaurant'],
+        description: 'Authentic Turkish cuisine with Halal certification',
+        longDescription: 'Pasha brings the flavors of Istanbul to Seoul with authentic Turkish dishes. All meat is Halal certified, and the restaurant features traditional Turkish decor and hospitality.',
+        coordinates: {
+            lat: 37.5342,
+            lng: 126.9955
+        },
+        icon: 'fas fa-drumstick-bite',
+        image: 'restaurants/pasha.jpg',
+        cuisine: 'Turkish',
+        priceRange: '$$',
+        halalCertification: 'KMF Certified',
+        tips: [
+            'Turkish breakfast served on weekends',
+            'Live Turkish music on Friday nights',
+            'Turkish tea and desserts available',
+            'Outdoor terrace for shisha'
+        ],
+        hours: '10:00 - 23:00 (Daily)',
+        phone: '+82-2-749-0600',
+        nearbySubway: 'Itaewon Station (Line 6, Exit 3)',
+        stations: [
+            { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '3' }
+        ]
+    }
+];
+
 // 추가 샘플 데이터를 위한 헬퍼 함수
 export function generateSampleData() {
     return {
@@ -423,7 +627,8 @@ export function generateSampleData() {
             version: '1.0.0',
             createdAt: new Date().toISOString(),
             totalCategories: categories.length,
-            totalLandmarks: landmarks.length
+            totalLandmarks: landmarks.length,
+            totalHalalRestaurants: halalRestaurants.length
         }
     };
 }

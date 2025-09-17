@@ -4,10 +4,10 @@
   "description": "Firebase migration scripts for Nero Tour",
   "type": "module",
   "scripts": {
-    "migrate": "node migration.js",
-    "migrate:clear": "node migration.js clear",
-    "migrate:reset": "node migration.js reset",
-    "migrate:help": "node migration.js help"
+    "migrate": "node migrate.js",
+    "migrate:clear": "node migrate.js clear",
+    "migrate:reset": "node migrate.js reset",
+    "migrate:help": "node migrate.js help"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

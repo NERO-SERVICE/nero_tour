@@ -1,7 +1,7 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { categories, landmarks } from './dummydata.js';
+import { categories, landmarks, halalRestaurants } from './dummydata.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -19,25 +19,71 @@ initializeApp({
 const db = getFirestore();
 const bucket = getStorage().bucket();
 
+// Helper function to clean data for Firestore
+function cleanDataForFirestore(data) {
+    const cleaned = {};
+    for (const [key, value] of Object.entries(data)) {
+        // Skip undefined values
+        if (value === undefined) {
+            continue;
+        }
+        // Recursively clean nested objects
+        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+            cleaned[key] = cleanDataForFirestore(value);
+        } else if (Array.isArray(value)) {
+            // Clean arrays
+            cleaned[key] = value.map(item => {
+                if (typeof item === 'object' && item !== null) {
+                    return cleanDataForFirestore(item);
+                }
+                return item;
+            }).filter(item => item !== undefined);
+        } else {
+            cleaned[key] = value;
+        }
+    }
+    return cleaned;
+}
+
 // Firestore Migration
 async function migrateFirestore() {
     console.log('Starting Firestore migration...');
-    
-    // Categories 마이그레이션
-    const categoriesRef = db.collection('categories');
-    for (const category of categories) {
-        await categoriesRef.doc(category.id).set(category);
-        console.log(`✅ Category migrated: ${category.name}`);
+
+    try {
+        // Categories 마이그레이션
+        const categoriesRef = db.collection('categories');
+        for (const category of categories) {
+            const cleanedCategory = cleanDataForFirestore(category);
+            await categoriesRef.doc(category.id).set(cleanedCategory);
+            console.log(`✅ Category migrated: ${category.name}`);
+        }
+
+        // Landmarks 마이그레이션
+        const landmarksRef = db.collection('landmarks');
+        for (const landmark of landmarks) {
+            const cleanedLandmark = cleanDataForFirestore(landmark);
+            await landmarksRef.doc(landmark.id).set(cleanedLandmark);
+            console.log(`✅ Landmark migrated: ${landmark.name}`);
+        }
+
+        // Halal Restaurants 마이그레이션
+        if (halalRestaurants && halalRestaurants.length > 0) {
+            const halalRef = db.collection('halalRestaurants');
+            for (const restaurant of halalRestaurants) {
+                const cleanedRestaurant = cleanDataForFirestore(restaurant);
+                await halalRef.doc(restaurant.id).set(cleanedRestaurant);
+                console.log(`✅ Halal restaurant migrated: ${restaurant.name}`);
+            }
+        }
+
+        console.log('✨ Firestore migration completed!');
+    } catch (error) {
+        console.error('❌ Migration error:', error.message);
+        if (error.code) {
+            console.error('Error code:', error.code);
+        }
+        throw error;
     }
-    
-    // Landmarks 마이그레이션
-    const landmarksRef = db.collection('landmarks');
-    for (const landmark of landmarks) {
-        await landmarksRef.doc(landmark.id).set(landmark);
-        console.log(`✅ Landmark migrated: ${landmark.name}`);
-    }
-    
-    console.log('✨ Firestore migration completed!');
 }
 
 // Storage Migration (이미지 업로드)
@@ -60,17 +106,97 @@ async function migrateStorage() {
     console.log('✨ Storage migration completed!');
 }
 
-// Migration 실행
-async function runMigration() {
+// Clear all data from Firestore
+async function clearFirestore() {
+    console.log('🗑️ Clearing all Firestore data...');
+
     try {
-        await migrateFirestore();
-        await migrateStorage();
-        console.log('🎉 All migrations completed successfully!');
+        // Clear categories
+        const categoriesSnapshot = await db.collection('categories').get();
+        for (const doc of categoriesSnapshot.docs) {
+            await doc.ref.delete();
+            console.log(`  ❌ Deleted category: ${doc.id}`);
+        }
+
+        // Clear landmarks
+        const landmarksSnapshot = await db.collection('landmarks').get();
+        for (const doc of landmarksSnapshot.docs) {
+            await doc.ref.delete();
+            console.log(`  ❌ Deleted landmark: ${doc.id}`);
+        }
+
+        // Clear halal restaurants
+        const halalSnapshot = await db.collection('halalRestaurants').get();
+        for (const doc of halalSnapshot.docs) {
+            await doc.ref.delete();
+            console.log(`  ❌ Deleted halal restaurant: ${doc.id}`);
+        }
+
+        console.log('✨ All data cleared!');
+    } catch (error) {
+        console.error('❌ Clear failed:', error.message);
+        throw error;
+    }
+}
+
+// Show help information
+function showHelp() {
+    console.log(`
+╔══════════════════════════════════════════════════════╗
+║           Firebase Migration Tool - Help             ║
+╚══════════════════════════════════════════════════════╝
+
+Usage: npm run <command>
+
+Commands:
+  migrate       - Upload all data to Firebase
+  migrate:clear - Delete all data from Firebase
+  migrate:reset - Clear and re-upload all data
+  migrate:help  - Show this help message
+
+Data Collections:
+  • categories (7 items)
+  • landmarks (9 items with KPDH attributes)
+  • halalRestaurants (8 items)
+
+Examples:
+  npm run migrate       # Upload data
+  npm run migrate:clear # Clear all data
+  npm run migrate:reset # Reset database
+`);
+}
+
+// Main execution
+async function main() {
+    const command = process.argv[2];
+
+    try {
+        switch (command) {
+            case 'clear':
+                await clearFirestore();
+                break;
+            case 'reset':
+                console.log('🔄 Resetting database...');
+                await clearFirestore();
+                console.log('\n📤 Re-uploading data...');
+                await migrateFirestore();
+                await migrateStorage();
+                console.log('✨ Reset completed!');
+                break;
+            case 'help':
+                showHelp();
+                break;
+            default:
+                await migrateFirestore();
+                await migrateStorage();
+                console.log('🎉 All migrations completed successfully!');
+                break;
+        }
         process.exit(0);
     } catch (error) {
-        console.error('❌ Migration failed:', error);
+        console.error('❌ Operation failed:', error);
         process.exit(1);
     }
 }
 
-runMigration();
+main();
