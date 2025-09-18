@@ -335,8 +335,8 @@ class SeoulExplorer {
                             <div class="location-tags">
                                 ${location.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                             </div>
-                            <div class="distance-info">Calculating distance...</div>
                         </div>
+                        <div class="distance-info">Calculating distance...</div>
                     </button>
                 `;
             }).join('');
@@ -401,15 +401,16 @@ class SeoulExplorer {
     
     // Measure the total height of info content
     measureInfoContentHeight(info, tags, distanceInfo) {
-        const padding = 33; // 15px + 18px padding from CSS
+        const padding = 30; // 15px top + 15px bottom padding
         const nameHeight = info.querySelector('.location-name')?.offsetHeight || 24;
         const koreanHeight = info.querySelector('.location-korean')?.offsetHeight || 20;
         const descHeight = info.querySelector('.location-description')?.offsetHeight || 36;
         const tagHeight = tags.offsetHeight;
-        const distanceHeight = distanceInfo?.offsetHeight || 36;
+        const tagMarginBottom = 50; // Tags have 50px margin-bottom for distance bar
         const gaps = 16; // Margins between elements
-        
-        return padding + nameHeight + koreanHeight + descHeight + tagHeight + distanceHeight + gaps;
+
+        // Distance info is absolutely positioned, tags have bottom margin to prevent overlap
+        return padding + nameHeight + koreanHeight + descHeight + tagHeight + tagMarginBottom + gaps;
     }
     
     // Get target card height based on viewport/container size

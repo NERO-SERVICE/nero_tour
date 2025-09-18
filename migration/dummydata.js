@@ -394,7 +394,26 @@ export const halalRestaurants = [
         hours: '11:30 - 21:00 (Daily)',
         phone: '+82-70-8899-8210',
         nearbySubway: 'Itaewon Station (Line 6, Exit 3)',
-        stations: [ { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '3' } ]
+        stations: [ { nameKorean: '이태원', nameEnglish: 'Itaewon', line: '6', exit: '3' } ],
+        detailSections: [
+            {
+                title: 'Korean Style Chinese food',
+                image: 'restaurants/eid_seoul_sub_1.jpg',
+                description: 'The observation deck spans 6 floors (117F-123F) with 360-degree views. The glass-floored Sky Deck on the 118th floor offers a thrilling experience looking straight down from 478 meters high.'
+            },
+            {
+                title: '다양한 한국음식',
+                image: 'restaurants/eid_seoul_sub_2.jpg',
+                description: 'The tower houses Lotte World Mall with luxury brands, the largest duty-free shop in Seoul, a concert hall, cinema, and aquarium, making it a complete entertainment destination.'
+            }
+        ],
+        tips: [
+            'Best sunset views from the fortress wall trail',
+            'Cherry blossoms in spring are spectacular',
+            'Connect with Ihwa Mural Village for a full day trip',
+            'Wear comfortable shoes for uphill walking'
+        ],
+        culturalTips: 'Major venue for international conferences and K-pop events. The Starfield Library has become an iconic Seoul landmark with its towering bookshelves.',
     },
     {
         id: 'halal-gosame',

@@ -174,17 +174,16 @@ body {
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
     text-align: left;
     width: 100%;
     display: flex;
     flex-direction: column;
     min-height: 300px;
+    position: relative;
 }
 
 .location-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
 
 .location-image {
@@ -197,7 +196,6 @@ body {
     overflow: hidden;
     border-radius: 16px 16px 0 0;
     flex-shrink: 0;
-    transition: height 0.3s ease;
 }
 
 .location-image img {
@@ -208,7 +206,6 @@ body {
     height: 100%;
     object-fit: cover;
     object-position: center;
-    transition: transform 0.3s ease;
 }
 
 .location-image i {
@@ -222,7 +219,7 @@ body {
 }
 
 .location-info {
-    padding: 15px 18px 18px;
+    padding: 15px 18px 15px; /* Reduced bottom padding since tags now have margin */
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -247,6 +244,7 @@ body {
     flex-wrap: wrap;
     gap: 6px;
     margin-top: auto; /* Push tags to bottom */
+    margin-bottom: 50px; /* Space for distance bar */
     min-height: 28px; /* Account for single line of tags */
 }
 
@@ -260,14 +258,31 @@ body {
 }
 
 .distance-info {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
     background: #f1f8e9;
-    color: #558b2f;
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    margin-top: 10px;
+    color: #2e7d32;
+    padding: 8px 16px;
+    font-size: 0.82rem;
     text-align: center;
-    font-weight: 500;
+    font-weight: 600;
+    border-radius: 8px;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    z-index: 10;
+}
+
+.distance-info::before {
+    content: "\f3c5";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 0.75rem;
+    opacity: 0.85;
 }
 
 /* Explore page styles - cleaned up */
@@ -1485,10 +1500,7 @@ body {
     pointer-events: none;
 }
 
-/* Mobile Touch Interactions */
-.location-card:active .location-image img {
-    transform: scale(1.02);
-}
+/* Touch interactions removed for cleaner experience */
 
 .location-image .icon-fallback {
     position: absolute;
