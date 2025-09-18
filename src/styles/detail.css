@@ -367,39 +367,59 @@ body {
     transform: translateY(0);
 }
 
-/* Subway Stations Section */
-.subway-stations {
-    margin-top: 24px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 12px;
+/* Subway Stations Block - Separate from Practical Info */
+.subway-stations-block {
+    margin: 24px 0;
+    padding: 24px 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
-.subway-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 16px 0;
+.subway-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.subway-header i {
+    font-size: 1.4rem;
+    color: #667eea;
+}
+
+.subway-header h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    flex: 1;
 }
 
 .stations-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
+    padding: 0 4px;
 }
 
 .station-item {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
+    gap: 16px;
+    padding: 16px 20px;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+}
+
+.station-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .station-item.no-exit {
@@ -414,18 +434,23 @@ body {
 
 /* Seoul Subway Line Colors - Official */
 .subway-line {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     color: white;
     font-family: 'SeoulNamsan', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: bold;
-    font-size: 15px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.subway-line:hover {
+    transform: scale(1.1);
 }
 
 /* Seoul Metropolitan Subway Lines */
@@ -460,7 +485,8 @@ body {
     display: flex;
     flex: 1;
     min-width: 0; /* Allow text to shrink */
-    justify-content: center;
+    justify-content: flex-start;
+    padding: 0 8px;
 }
 
 /* Horizontal layout (default for short names) */
@@ -511,12 +537,18 @@ body {
 
 .station-exits {
     font-size: 0.85rem;
-    color: #777;
-    padding: 4px 10px;
-    background: #f0f0f0;
-    border-radius: 12px;
+    color: #667eea;
+    padding: 6px 12px;
+    background: #e3f2fd;
+    border-radius: 14px;
     white-space: nowrap;
     font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.station-item:hover .station-exits {
+    background: #667eea;
+    color: white;
 }
 
 /* Adjust grid for vertical names */
@@ -529,22 +561,23 @@ body {
     .station-item {
         grid-template-columns: auto 1fr;
         grid-template-rows: auto auto;
+        padding: 14px 16px;
     }
-    
+
     .station-item.no-exit {
         grid-template-rows: auto;
     }
-    
+
     .station-exit-wrapper {
         grid-column: 1 / -1;
         justify-content: flex-start;
         margin-top: 8px;
     }
-    
+
     .subway-line {
-        width: 28px;
-        height: 28px;
-        font-size: 14px;
+        width: 32px;
+        height: 32px;
+        font-size: 15px;
     }
     
     .station-name-wrapper.vertical .name-korean {
@@ -570,6 +603,32 @@ body {
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/SeoulNamsanM.woff') format('woff');
     font-weight: normal;
     font-style: normal;
+}
+
+/* Halal Restaurant Specific Styles */
+.practical-info.restaurant {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+}
+
+.phone-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.phone-link:hover {
+    color: #5a6fd8;
+    text-decoration: underline;
+}
+
+/* Info items with certificate icon */
+.info-item i.fa-certificate {
+    color: #4caf50;
+}
+
+.info-item i.fa-utensils {
+    color: #ff6b6b;
 }
 
 /* Remove all responsive styles - Mobile only design */

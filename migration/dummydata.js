@@ -33,8 +33,8 @@ export const landmarks = [
         description: 'Traditional Jeju shamanistic shrine protecting the village',
         longDescription: 'Seonangdang is a sacred shrine unique to Jeju Island where local deities are worshipped. These small stone structures have protected villages for centuries and represent the spiritual culture of Jeju. Visitors can witness traditional rituals and learn about the island\'s unique shamanistic heritage.',
         coordinates: {
-            lat: 33.5101,
-            lng: 126.5219
+            lat: 33.322663,
+            lng: 126.841771
         },
         icon: 'fas fa-torii-gate',
         image: 'landmarks/jeju_seonangdang_kdh.png',
@@ -444,7 +444,7 @@ export const halalRestaurants = [
         tags: ['American','Halal'],
         description: 'American Restaurant',
         longDescription: 'American Restaurant',
-        coordinates: { lat: 37.5630639, lng: 126.9851915 },
+        coordinates: { lat: 37.559114, lng: 126.924412 },
         icon: 'fas fa-drumstick-bite',
         image: 'restaurants/jilhalbros_hongdae_seoul.jpg',
         cuisine: 'American',

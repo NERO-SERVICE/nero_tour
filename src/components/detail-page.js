@@ -332,49 +332,21 @@ class DetailPage {
                 ${this.renderDetailSections()}
                 
                 <!-- Practical Information -->
-                <div class="practical-info">
-                    <h3><i class="fas fa-info-circle"></i> Practical Information</h3>
+                <div class="practical-info ${this.locationData.category === 'halal' ? 'restaurant' : ''}">
+                    <h3><i class="fas fa-info-circle"></i> ${this.locationData.category === 'halal' ? 'Restaurant Information' : 'Practical Information'}</h3>
                     <div class="info-grid">
-                        <div class="info-item">
-                            <i class="fas fa-clock"></i>
-                            <div class="info-item-content">
-                                <div class="info-item-label">Hours</div>
-                                <div class="info-item-value">${this.locationData.hours}</div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-won-sign"></i>
-                            <div class="info-item-content">
-                                <div class="info-item-label">Entrance</div>
-                                <div class="info-item-value">${this.locationData.entrance}</div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-subway"></i>
-                            <div class="info-item-content">
-                                <div class="info-item-label">Nearest Subway</div>
-                                <div class="info-item-value">${this.locationData.nearbySubway}</div>
-                            </div>
-                        </div>
-                        ${this.renderSubwayStations()}
+                        ${this.renderPracticalInfo()}
                     </div>
                 </div>
-                
+
+                <!-- Subway Stations (Separate Block) -->
+                ${this.renderSubwayStationsBlock()}
+
                 <!-- Tips Section -->
-                <div class="tips-section">
-                    <h3><i class="fas fa-lightbulb"></i> Insider Tips</h3>
-                    <ul class="tips-list">
-                        ${this.locationData.tips.map(tip => `<li>${tip}</li>`).join('')}
-                    </ul>
-                </div>
-                
+                ${this.renderTipsSection()}
+
                 <!-- Cultural Tips -->
-                <div class="detail-section">
-                    <div class="detail-section-title">🇰🇷 Cultural Insight</div>
-                    <div class="detail-section-description">
-                        <em>${this.locationData.culturalTips}</em>
-                    </div>
-                </div>
+                ${this.renderCulturalSection()}
             </div>
         `;
 
@@ -423,6 +395,87 @@ class DetailPage {
         }
     }
 
+    renderPracticalInfo() {
+        // For Halal restaurants, show restaurant-specific information
+        if (this.locationData.category === 'halal') {
+            return `
+                <div class="info-item">
+                    <i class="fas fa-utensils"></i>
+                    <div class="info-item-content">
+                        <div class="info-item-label">Cuisine</div>
+                        <div class="info-item-value">${this.locationData.cuisine || 'International'}</div>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <div class="info-item-content">
+                        <div class="info-item-label">Hours</div>
+                        <div class="info-item-value">${this.locationData.hours}</div>
+                    </div>
+                </div>
+                ${this.locationData.phone ? `
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <div class="info-item-content">
+                        <div class="info-item-label">Phone</div>
+                        <div class="info-item-value"><a href="tel:${this.locationData.phone}" class="phone-link">${this.locationData.phone}</a></div>
+                    </div>
+                </div>
+                ` : ''}
+                ${this.locationData.priceRange ? `
+                <div class="info-item">
+                    <i class="fas fa-won-sign"></i>
+                    <div class="info-item-content">
+                        <div class="info-item-label">Price Range</div>
+                        <div class="info-item-value">${this.locationData.priceRange}</div>
+                    </div>
+                </div>
+                ` : ''}
+                ${this.locationData.halalCertification ? `
+                <div class="info-item">
+                    <i class="fas fa-certificate"></i>
+                    <div class="info-item-content">
+                        <div class="info-item-label">Halal Certification</div>
+                        <div class="info-item-value">${this.locationData.halalCertification}</div>
+                    </div>
+                </div>
+                ` : ''}
+                <div class="info-item">
+                    <i class="fas fa-subway"></i>
+                    <div class="info-item-content">
+                        <div class="info-item-label">Nearest Subway</div>
+                        <div class="info-item-value">${this.locationData.nearbySubway}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Default information for non-restaurant locations
+        return `
+            <div class="info-item">
+                <i class="fas fa-clock"></i>
+                <div class="info-item-content">
+                    <div class="info-item-label">Hours</div>
+                    <div class="info-item-value">${this.locationData.hours}</div>
+                </div>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-won-sign"></i>
+                <div class="info-item-content">
+                    <div class="info-item-label">Entrance</div>
+                    <div class="info-item-value">${this.locationData.entrance || 'Free'}</div>
+                </div>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-subway"></i>
+                <div class="info-item-content">
+                    <div class="info-item-label">Nearest Subway</div>
+                    <div class="info-item-value">${this.locationData.nearbySubway}</div>
+                </div>
+            </div>
+        `;
+    }
+
     renderDetailSections() {
         if (!this.locationData.detailSections || this.locationData.detailSections.length === 0) {
             return '';
@@ -441,7 +494,37 @@ class DetailPage {
         }).join('');
     }
 
-    renderSubwayStations() {
+    renderTipsSection() {
+        if (!this.locationData.tips || this.locationData.tips.length === 0) {
+            return '';
+        }
+
+        return `
+            <div class="tips-section">
+                <h3><i class="fas fa-lightbulb"></i> ${this.locationData.category === 'halal' ? 'Dining Tips' : 'Insider Tips'}</h3>
+                <ul class="tips-list">
+                    ${this.locationData.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    renderCulturalSection() {
+        if (!this.locationData.culturalTips) {
+            return '';
+        }
+
+        return `
+            <div class="detail-section">
+                <div class="detail-section-title">${this.locationData.category === 'halal' ? '🍴 About This Restaurant' : '🇰🇷 Cultural Insight'}</div>
+                <div class="detail-section-description">
+                    <em>${this.locationData.culturalTips}</em>
+                </div>
+            </div>
+        `;
+    }
+
+    renderSubwayStationsBlock() {
         if (!this.locationData.stations || this.locationData.stations.length === 0) {
             return '';
         }
@@ -464,10 +547,11 @@ class DetailPage {
         });
 
         return `
-            <div class="subway-stations">
-                <h4 class="subway-title">
-                    <i class="fas fa-train"></i> Subway Stations
-                </h4>
+            <div class="subway-stations-block">
+                <div class="subway-header">
+                    <i class="fas fa-train"></i>
+                    <h3>Nearby Subway Stations</h3>
+                </div>
                 <div class="stations-list">
                     ${Object.values(stationGroups).map(group => {
                         // Sort lines by number and group exits
