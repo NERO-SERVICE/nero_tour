@@ -309,14 +309,173 @@ class SeoulExplorer {
         }
     }
 
+    // Render KPDH section with horizontal scrolling
+    async renderKPDHSection() {
+        try {
+            const landmarks = await this.getSeoulLandmarks();
+            const kpdhLandmarks = landmarks.filter(location => location.category === 'kpdh');
+
+            if (kpdhLandmarks.length === 0) return '';
+
+            // Create cards HTML with clones for infinite scroll
+            const cardsHTML = kpdhLandmarks.map((location, index) => `
+                <div class="kpdh-card" data-location-id="${location.id}" data-index="${index}" onclick="seoulExplorer.navigateToDetail('${location.id}')">
+                    ${location.image ?
+                        `<img src="${imageService.getLandmarkImage(location.image)}"
+                             alt="${location.name}"
+                             class="kpdh-card-bg"
+                             loading="lazy"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                         <div class="kpdh-icon-fallback" style="display:none;">
+                            <i class="${location.icon}"></i>
+                         </div>` :
+                        `<div class="kpdh-icon-fallback">
+                            <i class="${location.icon}"></i>
+                         </div>`
+                    }
+                    <div class="kpdh-overlay">
+                        <div class="kpdh-text-content">
+                            <h3 class="kpdh-card-title">${location.name}</h3>
+                            <p class="kpdh-card-korean">${location.nameKorean}</p>
+                            <p class="kpdh-card-description">${location.description}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add clones for infinite scroll
+            const lastTwo = kpdhLandmarks.slice(-2).map((location, index) => `
+                <div class="kpdh-card kpdh-card-clone" data-location-id="${location.id}" data-index="${kpdhLandmarks.length - 2 + index}" onclick="seoulExplorer.navigateToDetail('${location.id}')">
+                    ${location.image ?
+                        `<img src="${imageService.getLandmarkImage(location.image)}"
+                             alt="${location.name}"
+                             class="kpdh-card-bg"
+                             loading="lazy"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                         <div class="kpdh-icon-fallback" style="display:none;">
+                            <i class="${location.icon}"></i>
+                         </div>` :
+                        `<div class="kpdh-icon-fallback">
+                            <i class="${location.icon}"></i>
+                         </div>`
+                    }
+                    <div class="kpdh-overlay">
+                        <div class="kpdh-text-content">
+                            <h3 class="kpdh-card-title">${location.name}</h3>
+                            <p class="kpdh-card-korean">${location.nameKorean}</p>
+                            <p class="kpdh-card-description">${location.description}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            const firstTwo = kpdhLandmarks.slice(0, 2).map((location, index) => `
+                <div class="kpdh-card kpdh-card-clone" data-location-id="${location.id}" data-index="${index}" onclick="seoulExplorer.navigateToDetail('${location.id}')">
+                    ${location.image ?
+                        `<img src="${imageService.getLandmarkImage(location.image)}"
+                             alt="${location.name}"
+                             class="kpdh-card-bg"
+                             loading="lazy"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                         <div class="kpdh-icon-fallback" style="display:none;">
+                            <i class="${location.icon}"></i>
+                         </div>` :
+                        `<div class="kpdh-icon-fallback">
+                            <i class="${location.icon}"></i>
+                         </div>`
+                    }
+                    <div class="kpdh-overlay">
+                        <div class="kpdh-text-content">
+                            <h3 class="kpdh-card-title">${location.name}</h3>
+                            <p class="kpdh-card-korean">${location.nameKorean}</p>
+                            <p class="kpdh-card-description">${location.description}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Create dot indicators
+            const dotsHTML = kpdhLandmarks.map((_, index) => `
+                <span class="kpdh-dot ${index === 0 ? 'active' : ''}" data-index="${index}"></span>
+            `).join('');
+
+            return `
+                <section class="kpdh-section">
+                    <div class="kpdh-header">
+                        <h2 class="kpdh-title">
+                            <span class="kpdh-badge">KPDH</span>
+                            Korean Digital Heritage
+                        </h2>
+                        <p class="kpdh-subtitle">Discover Korea's cultural treasures</p>
+                    </div>
+                    <div class="kpdh-container">
+                        <button class="kpdh-nav-btn kpdh-nav-prev" aria-label="Previous">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div class="kpdh-scroll-container">
+                            <div class="kpdh-cards">
+                                ${lastTwo}
+                                ${cardsHTML}
+                                ${firstTwo}
+                            </div>
+                        </div>
+                        <button class="kpdh-nav-btn kpdh-nav-next" aria-label="Next">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="kpdh-dots">
+                        ${dotsHTML}
+                    </div>
+                </section>
+            `;
+        } catch (error) {
+            console.error('❌ Error rendering KPDH section:', error);
+            return '';
+        }
+    }
+
     // Render location cards
     async renderLocationCards() {
         const locationsGrid = document.getElementById('locationsGrid');
-        
+
         try {
             const landmarks = await this.getSeoulLandmarks();
+            // Filter to show only halal category
+            const halalLandmarks = landmarks.filter(location => location.category === 'halal');
             
-            locationsGrid.innerHTML = landmarks.map(location => {
+            // Insert KPDH section and reorganize layout
+            const locationsSection = document.getElementById('locationsSection');
+            const kpdhHTML = await this.renderKPDHSection();
+
+            // Remove existing elements to reorganize
+            const existingKPDH = locationsSection.querySelector('.kpdh-section');
+            const existingTitle = locationsSection.querySelector('h2');
+            const locationInfo = document.getElementById('locationInfo');
+
+            if (existingKPDH) {
+                existingKPDH.remove();
+            }
+
+            // Store the title text
+            const titleText = existingTitle ? existingTitle.textContent : 'Popular Seoul Destinations';
+            if (existingTitle) {
+                existingTitle.remove();
+            }
+
+            // Insert in new order: KPDH section first
+            if (kpdhHTML && locationsSection) {
+                locationsSection.insertAdjacentHTML('afterbegin', kpdhHTML);
+
+                // Then add Popular Seoul Destinations title before Nearby Attractions
+                if (locationInfo) {
+                    locationInfo.insertAdjacentHTML('beforebegin', `<h2 class="section-title">${titleText}</h2>`);
+                }
+
+                // Setup horizontal scroll for KPDH cards
+                this.setupKPDHScroll();
+            }
+
+            locationsGrid.innerHTML = halalLandmarks.map(location => {
                 return `
                     <button class="location-card" data-location-id="${location.id}" onclick="seoulExplorer.navigateToDetail('${location.id}')">
                         <div class="location-image">
@@ -378,7 +537,6 @@ class SeoulExplorer {
         const image = card.querySelector('.location-image');
         const info = card.querySelector('.location-info');
         const tags = card.querySelector('.location-tags');
-        const distanceInfo = card.querySelector('.distance-info');
         
         if (!image || !info || !tags) return;
         
@@ -387,7 +545,7 @@ class SeoulExplorer {
         
         // Measure content dimensions
         const cardWidth = card.offsetWidth;
-        const infoHeight = this.measureInfoContentHeight(info, tags, distanceInfo);
+        const infoHeight = this.measureInfoContentHeight(info, tags);
         
         // Calculate optimal image height
         const targetCardHeight = this.getTargetCardHeight(cardWidth);
@@ -400,7 +558,7 @@ class SeoulExplorer {
     }
     
     // Measure the total height of info content
-    measureInfoContentHeight(info, tags, distanceInfo) {
+    measureInfoContentHeight(info, tags) {
         const padding = 30; // 15px top + 15px bottom padding
         const nameHeight = info.querySelector('.location-name')?.offsetHeight || 24;
         const koreanHeight = info.querySelector('.location-korean')?.offsetHeight || 20;
@@ -491,6 +649,160 @@ class SeoulExplorer {
     }
     
     
+    // Setup horizontal scroll for KPDH cards with infinite scroll
+    setupKPDHScroll() {
+        const scrollContainer = document.querySelector('.kpdh-scroll-container');
+        if (!scrollContainer) return;
+
+        const cards = scrollContainer.querySelector('.kpdh-cards');
+        if (!cards) return;
+
+        // Get all cards (excluding clones)
+        const allCards = cards.querySelectorAll('.kpdh-card:not(.kpdh-card-clone)');
+        const totalCards = allCards.length;
+        if (totalCards === 0) return;
+
+        const cardWidth = 180;
+        const gap = 12;
+        const cardWithGap = cardWidth + gap;
+
+        // Initialize position (start at first real card, accounting for 2 clones)
+        this.currentCardIndex = 0;
+        const initialOffset = 2 * cardWithGap; // 2 clone cards at the beginning
+
+        // Center the first card (full-width container)
+        const containerWidth = scrollContainer.offsetWidth;
+        const centerOffset = (containerWidth - cardWidth) / 2;
+        scrollContainer.scrollLeft = initialOffset - centerOffset;
+
+        // Setup navigation buttons
+        this.setupKPDHNavButtons(scrollContainer, totalCards, cardWithGap);
+
+        // Setup dot indicators
+        this.setupKPDHDots(scrollContainer, totalCards, cardWithGap);
+
+        // Handle scroll for infinite effect
+        this.setupInfiniteScroll(scrollContainer, totalCards, cardWithGap);
+
+        // Mouse wheel horizontal scroll
+        scrollContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Scroll by card width for better control
+            const direction = e.deltaY > 0 ? 1 : -1;
+            this.scrollToCard(this.currentCardIndex + direction, scrollContainer, totalCards, cardWithGap);
+        });
+    }
+
+    // Setup navigation buttons
+    setupKPDHNavButtons(scrollContainer, totalCards, cardWithGap) {
+        const prevBtn = document.querySelector('.kpdh-nav-prev');
+        const nextBtn = document.querySelector('.kpdh-nav-next');
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                this.scrollToCard(this.currentCardIndex - 1, scrollContainer, totalCards, cardWithGap);
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                this.scrollToCard(this.currentCardIndex + 1, scrollContainer, totalCards, cardWithGap);
+            });
+        }
+    }
+
+    // Setup dot indicators
+    setupKPDHDots(scrollContainer, totalCards, cardWithGap) {
+        const dots = document.querySelectorAll('.kpdh-dot');
+
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                this.scrollToCard(index, scrollContainer, totalCards, cardWithGap);
+            });
+        });
+    }
+
+    // Scroll to specific card with centering
+    scrollToCard(index, scrollContainer, totalCards, cardWithGap) {
+        // Handle infinite scroll wrapping
+        let targetIndex = index;
+        if (index < 0) {
+            targetIndex = totalCards - 1;
+        } else if (index >= totalCards) {
+            targetIndex = 0;
+        }
+
+        this.currentCardIndex = targetIndex;
+
+        // Calculate scroll position to center the card (edge-to-edge)
+        const containerWidth = scrollContainer.offsetWidth;
+        const cardWidth = 180;
+        const centerOffset = (containerWidth - cardWidth) / 2;
+        const cloneOffset = 2 * cardWithGap; // 2 clone cards at the beginning
+        const targetScroll = cloneOffset + (targetIndex * cardWithGap) - centerOffset;
+
+        scrollContainer.scrollTo({
+            left: targetScroll,
+            behavior: 'smooth'
+        });
+
+        // Update dot indicators
+        this.updateDotIndicators(targetIndex);
+    }
+
+    // Update active dot indicator
+    updateDotIndicators(activeIndex) {
+        const dots = document.querySelectorAll('.kpdh-dot');
+        dots.forEach((dot, index) => {
+            if (index === activeIndex) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+    }
+
+    // Setup infinite scroll behavior
+    setupInfiniteScroll(scrollContainer, totalCards, cardWithGap) {
+        let isScrolling = false;
+
+        scrollContainer.addEventListener('scroll', () => {
+            if (isScrolling) return;
+
+            const scrollLeft = scrollContainer.scrollLeft;
+            const containerWidth = scrollContainer.offsetWidth;
+            const cardWidth = 180;
+            const centerOffset = (containerWidth - cardWidth) / 2;
+            const cloneOffset = 2 * cardWithGap;
+
+            // Check if we've scrolled to the clones (edge-to-edge calculation)
+            if (scrollLeft < cardWithGap) {
+                // Scrolled to left clones, jump to end
+                isScrolling = true;
+                scrollContainer.scrollLeft = cloneOffset + (totalCards - 1) * cardWithGap - centerOffset;
+                this.currentCardIndex = totalCards - 1;
+                this.updateDotIndicators(this.currentCardIndex);
+                setTimeout(() => { isScrolling = false; }, 50);
+            } else if (scrollLeft > cloneOffset + totalCards * cardWithGap - cardWithGap) {
+                // Scrolled to right clones, jump to beginning
+                isScrolling = true;
+                scrollContainer.scrollLeft = cloneOffset - centerOffset;
+                this.currentCardIndex = 0;
+                this.updateDotIndicators(this.currentCardIndex);
+                setTimeout(() => { isScrolling = false; }, 50);
+            } else {
+                // Update current card index based on scroll position
+                const relativeScroll = scrollLeft - cloneOffset + centerOffset;
+                const newIndex = Math.round(relativeScroll / cardWithGap);
+                if (newIndex !== this.currentCardIndex && newIndex >= 0 && newIndex < totalCards) {
+                    this.currentCardIndex = newIndex;
+                    this.updateDotIndicators(this.currentCardIndex);
+                }
+            }
+        });
+    }
+
     // Cleanup method for observers
     cleanup() {
         if (this.cardResizeObserver) {
@@ -518,7 +830,7 @@ class SeoulExplorer {
         // Bottom navigation with enhanced debugging
         const navItems = document.querySelectorAll('.nav-item');
         
-        navItems.forEach((item, index) => {
+        navItems.forEach((item) => {
             const section = item.dataset.section;
             
             item.addEventListener('click', (e) => {
