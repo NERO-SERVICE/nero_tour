@@ -140,7 +140,7 @@ class SeoulExplorer {
                 if (nearbyLocations.length > 0) {
                     locationInfo.innerHTML = `
                         <div class="success-state">
-                            <h3>📍 Nearby Attractions</h3>
+                            <h3>📍 Nearby Restaurants</h3>
                             ${nearbyLocations.slice(0, 3).map(location => `
                                 <div style="margin: 8px 0; padding: 8px; border-left: 3px solid #4caf50;">
                                     <strong>${location.name}</strong><br>
@@ -265,9 +265,10 @@ class SeoulExplorer {
             }));
         } catch (error) {
             console.error('❌ Error finding nearby locations:', error);
-            // fallback으로 기존 방식 사용
+            // fallback으로 기존 방식 사용 (halal 카테고리만 필터링)
             const landmarks = await this.getSeoulLandmarks();
             return landmarks
+                .filter(location => location.category === 'halal')
                 .map(location => ({
                     ...location,
                     distance: this.calculateDistance(
@@ -457,7 +458,7 @@ class SeoulExplorer {
             }
 
             // Store the title text
-            const titleText = existingTitle ? existingTitle.textContent : 'Popular Seoul Destinations';
+            const titleText = existingTitle ? existingTitle.textContent : 'Seoul Halal Restaurants';
             if (existingTitle) {
                 existingTitle.remove();
             }
@@ -466,7 +467,7 @@ class SeoulExplorer {
             if (kpdhHTML && locationsSection) {
                 locationsSection.insertAdjacentHTML('afterbegin', kpdhHTML);
 
-                // Then add Popular Seoul Destinations title before Nearby Attractions
+                // Then add Seoul Halal Restaurants title before Nearby Restaurants
                 if (locationInfo) {
                     locationInfo.insertAdjacentHTML('beforebegin', `<h2 class="section-title">${titleText}</h2>`);
                 }
@@ -1149,7 +1150,7 @@ class SeoulExplorer {
 
     async showExplore() {
         const sectionTitle = document.querySelector('.locations-section h2');
-        if (sectionTitle) sectionTitle.textContent = 'Popular Seoul Destinations';
+        if (sectionTitle) sectionTitle.textContent = 'Seoul Halal Restaurants';
         await this.renderLocationCards();
         await this.updateDistances();
         this.addGuideToExplore();
