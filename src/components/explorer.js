@@ -662,18 +662,16 @@ class SeoulExplorer {
         const totalCards = allCards.length;
         if (totalCards === 0) return;
 
-        const cardWidth = 180;
-        const gap = 12;
-        const cardWithGap = cardWidth + gap;
+        const cardWidth = scrollContainer.offsetWidth; // Full container width
+        const gap = 0;
+        const cardWithGap = cardWidth;
 
         // Initialize position (start at first real card, accounting for 2 clones)
         this.currentCardIndex = 0;
         const initialOffset = 2 * cardWithGap; // 2 clone cards at the beginning
 
-        // Center the first card (full-width container)
-        const containerWidth = scrollContainer.offsetWidth;
-        const centerOffset = (containerWidth - cardWidth) / 2;
-        scrollContainer.scrollLeft = initialOffset - centerOffset;
+        // Position at first card (no centering needed for full-width cards)
+        scrollContainer.scrollLeft = initialOffset;
 
         // Setup navigation buttons
         this.setupKPDHNavButtons(scrollContainer, totalCards, cardWithGap);
@@ -683,6 +681,9 @@ class SeoulExplorer {
 
         // Handle scroll for infinite effect
         this.setupInfiniteScroll(scrollContainer, totalCards, cardWithGap);
+
+        // Setup auto-play
+        this.setupAutoPlay(scrollContainer, totalCards, cardWithGap);
 
         // Mouse wheel horizontal scroll
         scrollContainer.addEventListener('wheel', (e) => {
@@ -723,7 +724,7 @@ class SeoulExplorer {
         });
     }
 
-    // Scroll to specific card with centering
+    // Scroll to specific card
     scrollToCard(index, scrollContainer, totalCards, cardWithGap) {
         // Handle infinite scroll wrapping
         let targetIndex = index;
@@ -735,12 +736,9 @@ class SeoulExplorer {
 
         this.currentCardIndex = targetIndex;
 
-        // Calculate scroll position to center the card (edge-to-edge)
-        const containerWidth = scrollContainer.offsetWidth;
-        const cardWidth = 180;
-        const centerOffset = (containerWidth - cardWidth) / 2;
+        // Calculate scroll position for full-width cards
         const cloneOffset = 2 * cardWithGap; // 2 clone cards at the beginning
-        const targetScroll = cloneOffset + (targetIndex * cardWithGap) - centerOffset;
+        const targetScroll = cloneOffset + (targetIndex * cardWithGap);
 
         scrollContainer.scrollTo({
             left: targetScroll,
@@ -772,28 +770,27 @@ class SeoulExplorer {
 
             const scrollLeft = scrollContainer.scrollLeft;
             const containerWidth = scrollContainer.offsetWidth;
-            const cardWidth = 180;
-            const centerOffset = (containerWidth - cardWidth) / 2;
+            const cardWidth = scrollContainer.offsetWidth;
             const cloneOffset = 2 * cardWithGap;
 
-            // Check if we've scrolled to the clones (edge-to-edge calculation)
+            // Check if we've scrolled to the clones
             if (scrollLeft < cardWithGap) {
                 // Scrolled to left clones, jump to end
                 isScrolling = true;
-                scrollContainer.scrollLeft = cloneOffset + (totalCards - 1) * cardWithGap - centerOffset;
+                scrollContainer.scrollLeft = cloneOffset + (totalCards - 1) * cardWithGap;
                 this.currentCardIndex = totalCards - 1;
                 this.updateDotIndicators(this.currentCardIndex);
                 setTimeout(() => { isScrolling = false; }, 50);
             } else if (scrollLeft > cloneOffset + totalCards * cardWithGap - cardWithGap) {
                 // Scrolled to right clones, jump to beginning
                 isScrolling = true;
-                scrollContainer.scrollLeft = cloneOffset - centerOffset;
+                scrollContainer.scrollLeft = cloneOffset;
                 this.currentCardIndex = 0;
                 this.updateDotIndicators(this.currentCardIndex);
                 setTimeout(() => { isScrolling = false; }, 50);
             } else {
                 // Update current card index based on scroll position
-                const relativeScroll = scrollLeft - cloneOffset + centerOffset;
+                const relativeScroll = scrollLeft - cloneOffset;
                 const newIndex = Math.round(relativeScroll / cardWithGap);
                 if (newIndex !== this.currentCardIndex && newIndex >= 0 && newIndex < totalCards) {
                     this.currentCardIndex = newIndex;
@@ -803,11 +800,68 @@ class SeoulExplorer {
         });
     }
 
+    // Setup auto-play functionality
+    setupAutoPlay(scrollContainer, totalCards, cardWithGap) {
+        this.autoPlayInterval = null;
+        this.autoPlayTimeout = null;
+
+        // Start auto-play
+        this.startAutoPlay(scrollContainer, totalCards, cardWithGap);
+
+        // Pause auto-play on user interaction
+        const pauseAutoPlay = () => {
+            this.pauseAutoPlay();
+            this.resumeAutoPlayAfterDelay(scrollContainer, totalCards, cardWithGap);
+        };
+
+        // Add event listeners for user interaction
+        scrollContainer.addEventListener('touchstart', pauseAutoPlay);
+        scrollContainer.addEventListener('mousedown', pauseAutoPlay);
+
+        // Navigation buttons
+        const prevBtn = document.querySelector('.kpdh-nav-prev');
+        const nextBtn = document.querySelector('.kpdh-nav-next');
+        if (prevBtn) prevBtn.addEventListener('click', pauseAutoPlay);
+        if (nextBtn) nextBtn.addEventListener('click', pauseAutoPlay);
+
+        // Dot indicators
+        const dots = document.querySelectorAll('.kpdh-dot');
+        dots.forEach(dot => {
+            dot.addEventListener('click', pauseAutoPlay);
+        });
+    }
+
+    startAutoPlay(scrollContainer, totalCards, cardWithGap) {
+        this.autoPlayInterval = setInterval(() => {
+            const nextIndex = (this.currentCardIndex + 1) % totalCards;
+            this.scrollToCard(nextIndex, scrollContainer, totalCards, cardWithGap);
+        }, 3000);
+    }
+
+    pauseAutoPlay() {
+        if (this.autoPlayInterval) {
+            clearInterval(this.autoPlayInterval);
+            this.autoPlayInterval = null;
+        }
+        if (this.autoPlayTimeout) {
+            clearTimeout(this.autoPlayTimeout);
+            this.autoPlayTimeout = null;
+        }
+    }
+
+    resumeAutoPlayAfterDelay(scrollContainer, totalCards, cardWithGap) {
+        this.autoPlayTimeout = setTimeout(() => {
+            this.startAutoPlay(scrollContainer, totalCards, cardWithGap);
+        }, 5000); // Resume after 5 seconds of inactivity
+    }
+
     // Cleanup method for observers
     cleanup() {
         if (this.cardResizeObserver) {
             this.cardResizeObserver.disconnect();
         }
+        // Clear auto-play timers
+        this.pauseAutoPlay();
         if (this.resizeTimeout) {
             clearTimeout(this.resizeTimeout);
         }
